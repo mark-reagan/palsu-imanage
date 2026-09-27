@@ -48,5 +48,5 @@ RUN chmod +x /usr/local/bin/laravel-entrypoint \
     && a2ensite laravel \
     && sed -ri 's/^Listen 80$/Listen 10000/' /etc/apache2/ports.conf
 
-EXPOSE 10000
+EXPOSE 10000 8080
 ENTRYPOINT ["/usr/local/bin/laravel-entrypoint"]
