@@ -11,6 +11,8 @@ import { useOfflineMode } from '../../hooks/useOfflineMode';
 import { useAuth } from '../auth/useAuth';
 import { getNotificationEcho, leaveNotificationChannel } from './realtime';
 
+const APP_NAME = 'PalSU-iManage';
+
 export default function NotificationBell() {
 	const navigate = useNavigate();
 	const [open, setOpen] = useState(false);
@@ -22,6 +24,10 @@ export default function NotificationBell() {
 	const ref = useRef(null);
 	const knownUnreadRef = useRef(null);
 
+	useEffect(() => {
+		document.title = items.length > 0 ? `(${items.length}) PalSU-iManage` : 'PalSU-iManage';
+	}, [items]);
+
 	const loadUnread = useCallback(() => {
 		notificationsApi
 			.unread()
@@ -32,6 +38,7 @@ export default function NotificationBell() {
 				knownUnreadRef.current = new Set(unread.map((item) => item.id));
 				setItems(unread);
 				if (newNotificationArrived) {
+					document.title = `(${unread.length}) ${APP_NAME}`;
 					if (soundEnabled) playNotificationSound();
 					window.dispatchEvent(new Event('app-notification-received'));
 				}
@@ -90,6 +97,7 @@ export default function NotificationBell() {
 		}
 		setOpen(false);
 		navigate(getNotificationPath(notification));
+		loadUnread();
 	}
 
 	function toggleSound() {
@@ -99,6 +107,7 @@ export default function NotificationBell() {
 	function toggleNotifications() {
 		if (window.matchMedia('(max-width: 639px)').matches) {
 			setOpen(false);
+			loadUnread();
 			navigate('/notifications');
 			return;
 		}

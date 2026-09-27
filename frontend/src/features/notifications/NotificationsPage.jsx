@@ -10,6 +10,9 @@ import { notificationsApi } from './api';
 import { useOfflineMode } from '../../hooks/useOfflineMode';
 import { getNotificationPath, useNotificationSoundPreference } from './notificationUtils';
 
+// App name for dynamic page title
+const APP_NAME = 'PalSU-iManage';
+
 export default function NotificationsPage() {
 	const navigate = useNavigate();
 	const [page, setPage] = useState(1);
@@ -20,6 +23,12 @@ export default function NotificationsPage() {
 		[page],
 	);
 	const contentRef = useRef(null);
+
+	const unreadCount = data?.data?.filter((n) => !n.read_at).length || 0;
+
+	useEffect(() => {
+		document.title = unreadCount > 0 ? `(${unreadCount}) PalSU-iManage` : 'PalSU-iManage';
+	}, [unreadCount]);
 
 	useEffect(() => {
 		window.addEventListener('app-notification-received', refetch);
@@ -43,6 +52,7 @@ export default function NotificationsPage() {
 			}
 		}
 		navigate(getNotificationPath(notification));
+		window.dispatchEvent(new Event('app-notification-received'));
 	}
 
 	async function handleMarkAll() {
