@@ -122,7 +122,7 @@ export default function AppLayout() {
 
 			{/* Mobile sidebar */}
 			<div
-				className={`fixed inset-0 z-40 transition-opacity duration-300 motion-reduce:transition-none lg:hidden ${
+				className={`fixed inset-0 z-40 overflow-hidden transition-opacity duration-300 motion-reduce:transition-none lg:hidden ${
 					mobileOpen
 						? 'pointer-events-auto opacity-100'
 						: 'pointer-events-none opacity-0'
@@ -139,7 +139,7 @@ export default function AppLayout() {
 				<aside
 					inert={!mobileOpen}
 					aria-label="Mobile navigation"
-					className={`relative z-10 flex h-full w-72 flex-col bg-gradient-to-b from-orange-500 via-orange-500 to-amber-500 text-white shadow-2xl transition-transform duration-300 ease-in-out motion-reduce:transition-none ${
+					className={`absolute inset-y-0 left-0 z-10 flex h-full w-72 flex-col bg-gradient-to-b from-orange-500 via-orange-500 to-amber-500 text-white shadow-2xl transition-transform duration-300 ease-in-out motion-reduce:transition-none ${
 						mobileOpen ? 'translate-x-0' : '-translate-x-full'
 					}`}
 				>

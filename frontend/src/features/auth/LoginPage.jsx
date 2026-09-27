@@ -16,7 +16,11 @@ export default function LoginPage() {
 
 	// Focus email input on mount
 	useEffect(() => {
-		if (emailInputRef.current) {
+		// Avoid opening the on-screen keyboard and shifting the viewport on mobile.
+		if (
+			window.matchMedia('(min-width: 768px)').matches &&
+			emailInputRef.current
+		) {
 			emailInputRef.current.focus();
 		}
 	}, []);
