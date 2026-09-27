@@ -59,11 +59,11 @@ Modernize the application UI and UX while keeping the existing role-based invent
 
 ## Phase 6: Request Workflows
 
-- [ ] Allow users to select multiple equipment items before finalizing a request
-- [ ] Allow users to select multiple supply items before finalizing a request
-- [ ] Improve final request summary and confirmation flow before submit
-- [ ] Ensure request creation works with multi-item selection in both frontend and backend validation
-- [ ] Update request details UI to show item breakdown clearly
+- [x] Allow users to select multiple equipment items before finalizing a request
+- [x] Allow users to select multiple supply items before finalizing a request
+- [x] Improve final request summary and confirmation flow before submit
+- [x] Ensure request creation works with multi-item selection in both frontend and backend validation
+- [x] Update request details UI to show item breakdown clearly
 
 ## Phase 7: Approval, Release, and Return Flow
 

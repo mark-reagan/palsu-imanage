@@ -51,6 +51,61 @@ class SupplyRequestController extends Controller
         $user = $request->user();
         $data = $request->validated();
 
+        if ($request->filled('items')) {
+            $requests = collect();
+
+            foreach ($data['items'] as $item) {
+                $supply = Supply::findOrFail($item['supply_id']);
+
+                if (! $supply->is_active) {
+                    return response()->json(['message' => "This supply item is not available: {$supply->name}.",], 422);
+                }
+
+                if ($item['quantity'] > $supply->stock_quantity) {
+                    throw ValidationException::withMessages([
+                        'items' => ["Only {$supply->stock_quantity} unit(s) currently in stock for {$supply->name}.",],
+                    ]);
+                }
+
+                $requests->push([
+                    'supply' => $supply,
+                    'item' => $item,
+                ]);
+            }
+
+            $created = collect();
+            foreach ($requests as $requestEntry) {
+                $supply = $requestEntry['supply'];
+                $item = $requestEntry['item'];
+
+                $supplyRequest = SupplyRequest::create([
+                    'user_id' => $user->id,
+                    'supply_id' => $supply->id,
+                    'quantity' => $item['quantity'],
+                    'purpose' => $item['purpose'],
+                    'status' => 'pending',
+                ]);
+
+                User::query()
+                    ->where('role', 'admin')
+                    ->where('is_active', true)
+                    ->get()
+                    ->each(fn (User $admin) => $admin->notify(new NewRequestNotification(
+                        'supply',
+                        $supplyRequest->id,
+                        $supply->name,
+                        $user->name,
+                    )));
+
+                $created->push($supplyRequest->fresh(['supply']));
+            }
+
+            return response()->json([
+                'message' => 'Supply requests created successfully.',
+                'data' => $created->map(fn (SupplyRequest $item) => new SupplyRequestResource($item))->values()->all(),
+            ], 201);
+        }
+
         $supply = Supply::findOrFail($data['supply_id']);
 
         if (! $supply->is_active) {

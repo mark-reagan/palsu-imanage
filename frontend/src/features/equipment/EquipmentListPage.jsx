@@ -29,6 +29,8 @@ export default function EquipmentListPage() {
 	const [barcodeTarget, setBarcodeTarget] = useState(null);
 	const [scannerOpen, setScannerOpen] = useState(false);
 	const [requestTarget, setRequestTarget] = useState(null);
+	const [requestDialogOpen, setRequestDialogOpen] = useState(false);
+	const [requestItems, setRequestItems] = useState([]);
 	const [actionError, setActionError] = useState(null);
 
 	const { data, error, loading, refetch } = useApiRequest(
@@ -43,6 +45,16 @@ export default function EquipmentListPage() {
 	const searchPlaceholder = canScanBarcode
 		? 'Search equipment or scan barcode'
 		: 'Search equipment';
+
+	function toggleRequestSelection(item) {
+		setRequestItems((current) => {
+			const exists = current.some((entry) => entry.id === item.id);
+			if (exists) {
+				return current.filter((entry) => entry.id !== item.id);
+			}
+			return [...current, item];
+		});
+	}
 
 	async function handleRemove(equipment) {
 		if (isReadOnlyAdmin) return;
@@ -103,10 +115,16 @@ export default function EquipmentListPage() {
 				<div className="flex justify-end gap-2">
 					{canRequest && r.status !== 'unavailable' && (
 						<button
-							className="btn-primary btn-sm"
-							onClick={() => setRequestTarget(r)}
+							className={
+								requestItems.some((item) => item.id === r.id)
+									? 'btn-secondary btn-sm'
+									: 'btn-primary btn-sm'
+							}
+							onClick={() => toggleRequestSelection(r)}
 						>
-							Request
+							{requestItems.some((item) => item.id === r.id)
+								? 'Selected'
+								: 'Add to request'}
 						</button>
 					)}
 					{canManage && (
@@ -158,17 +176,27 @@ export default function EquipmentListPage() {
 						Reusable properties such as chairs, sound systems, and projectors.
 					</p>
 				</div>
-				{canManage && (
-					<Button
-						disabled={isReadOnlyAdmin}
-						onClick={() => {
-							setEditing(null);
-							setFormOpen(true);
-						}}
-					>
-						<Icon name="plus" className="h-4 w-4" /> Add Equipment
-					</Button>
-				)}
+				<div className="flex items-center gap-2">
+					{canManage && (
+						<Button
+							disabled={isReadOnlyAdmin}
+							onClick={() => {
+								setEditing(null);
+								setFormOpen(true);
+							}}
+						>
+							<Icon name="plus" className="h-4 w-4" /> Add Equipment
+						</Button>
+					)}
+					{requestItems.length > 0 && (
+						<Button
+							variant="secondary"
+							onClick={() => setRequestDialogOpen(true)}
+						>
+							Review selected ({requestItems.length})
+						</Button>
+					)}
+				</div>
 			</div>
 
 			<Card>
@@ -236,6 +264,7 @@ export default function EquipmentListPage() {
 					open
 					onClose={() => setBarcodeTarget(null)}
 					equipment={barcodeTarget}
+					scanEnabled={canScanBarcode}
 				/>
 			)}
 			{scannerOpen && (
@@ -243,6 +272,7 @@ export default function EquipmentListPage() {
 					open
 					onClose={() => setScannerOpen(false)}
 					equipment={null}
+					scanEnabled={canScanBarcode}
 					onScanned={(barcode) => {
 						setSearch(barcode);
 						setPage(1);
@@ -251,10 +281,20 @@ export default function EquipmentListPage() {
 				/>
 			)}
 			<NewEquipmentRequestModal
-				open={!!requestTarget}
-				onClose={() => setRequestTarget(null)}
+				open={requestDialogOpen}
+				onClose={() => {
+					setRequestDialogOpen(false);
+					setRequestTarget(null);
+					setRequestItems([]);
+				}}
 				equipment={requestTarget}
-				onSaved={refetch}
+				items={requestItems}
+				onSaved={() => {
+					refetch();
+					setRequestDialogOpen(false);
+					setRequestTarget(null);
+					setRequestItems([]);
+				}}
 			/>
 		</div>
 	);

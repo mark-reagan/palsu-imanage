@@ -1,9 +1,8 @@
-import { Suspense, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../features/auth/useAuth';
 import NotificationBell from '../features/notifications/NotificationBell';
 import Icon from '../components/ui/Icon';
-import PageSkeleton from '../components/ui/PageSkeleton';
 import ErrorBoundary from '../components/ui/ErrorBoundary';
 import { NAV_ITEMS } from './navConfig';
 import { useOfflineMode } from '../hooks/useOfflineMode';
@@ -207,9 +206,7 @@ export default function AppLayout() {
 
 				<main className="px-4 py-6 sm:px-6 lg:px-8">
 					<ErrorBoundary key={location.pathname}>
-						<Suspense fallback={<PageSkeleton />}>
-							<Outlet />
-						</Suspense>
+						<Outlet />
 					</ErrorBoundary>
 				</main>
 			</div>

@@ -14,6 +14,7 @@ export default function EquipmentBarcodeModal({
 	open,
 	onClose,
 	equipment,
+	scanEnabled,
 	onScanned,
 }) {
 	const videoRef = useRef(null);
@@ -33,7 +34,7 @@ export default function EquipmentBarcodeModal({
 	});
 
 	useEffect(() => {
-		if (!open || !videoRef.current) return undefined;
+		if (!open || !scanEnabled || !videoRef.current) return undefined;
 		const reader = new BrowserMultiFormatReader();
 		reader
 			.decodeFromVideoDevice(undefined, videoRef.current, (scanResult) => {
@@ -61,7 +62,7 @@ export default function EquipmentBarcodeModal({
 			controlsRef.current?.stop();
 			controlsRef.current = null;
 		};
-	}, [open]);
+	}, [open, scanEnabled]);
 
 	async function lookup(value = code) {
 		const barcode = value.trim();
@@ -94,40 +95,44 @@ export default function EquipmentBarcodeModal({
 		<Modal
 			open={open}
 			onClose={onClose}
-			title="Scan equipment barcode"
+			title={scanEnabled ? 'Scan equipment barcode' : 'Equipment barcode'}
 			size="md"
 		>
 			<div className="space-y-4">
-				<div className="overflow-hidden rounded-lg bg-slate-900">
-					<video
-						ref={videoRef}
-						className="aspect-video w-full object-cover"
-						muted
-						playsInline
-					/>
-				</div>
-				<p className="text-xs text-slate-500">
-					Allow camera access to scan a CODE128 barcode, or enter its code
-					below.
-				</p>
-				<form
-					className="flex items-end gap-2"
-					onSubmit={(event) => {
-						event.preventDefault();
-						lookup();
-					}}
-				>
-					<Input
-						label="Barcode code"
-						value={code}
-						onChange={(event) => setCode(event.target.value)}
-						placeholder="EQ-00000001"
-					/>
-					<Button type="submit" loading={loading}>
-						Check
-					</Button>
-				</form>
-				<ErrorAlert error={cameraError ? new Error(cameraError) : error} />
+				{scanEnabled && (
+					<>
+						<div className="overflow-hidden rounded-lg bg-slate-900">
+							<video
+								ref={videoRef}
+								className="aspect-video w-full object-cover"
+								muted
+								playsInline
+							/>
+						</div>
+						<p className="text-xs text-slate-500">
+							Allow camera access to scan a CODE128 barcode, or enter its code
+							below.
+						</p>
+						<form
+							className="flex items-end gap-2"
+							onSubmit={(event) => {
+								event.preventDefault();
+								lookup();
+							}}
+						>
+							<Input
+								label="Barcode code"
+								value={code}
+								onChange={(event) => setCode(event.target.value)}
+								placeholder="EQ-00000001"
+							/>
+							<Button type="submit" loading={loading}>
+								Check
+							</Button>
+						</form>
+						<ErrorAlert error={cameraError ? new Error(cameraError) : error} />
+					</>
+				)}
 				{equipment?.barcode && (
 					<div className="rounded-lg border border-slate-200 p-3">
 						<p className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-500">
@@ -143,13 +148,14 @@ export default function EquipmentBarcodeModal({
 							variant="secondary"
 							size="sm"
 							onClick={downloadBarcode}
+							className="mt-3"
 						>
 							Download barcode
 						</Button>
 					</div>
 				)}
-				{loading && <Spinner />}
-				{result && (
+				{scanEnabled && loading && <Spinner />}
+				{scanEnabled && result && (
 					<div className="space-y-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
 						<div className="flex items-start justify-between gap-4">
 							<div>
@@ -191,5 +197,6 @@ EquipmentBarcodeModal.propTypes = {
 		barcode: PropTypes.string,
 		name: PropTypes.string,
 	}),
+	scanEnabled: PropTypes.bool.isRequired,
 	onScanned: PropTypes.func,
 };

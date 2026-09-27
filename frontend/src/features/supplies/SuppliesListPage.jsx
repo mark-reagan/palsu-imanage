@@ -24,6 +24,8 @@ export default function SuppliesListPage() {
 	const [formOpen, setFormOpen] = useState(false);
 	const [editing, setEditing] = useState(null);
 	const [requestTarget, setRequestTarget] = useState(null);
+	const [requestDialogOpen, setRequestDialogOpen] = useState(false);
+	const [requestItems, setRequestItems] = useState([]);
 	const [barcodeTarget, setBarcodeTarget] = useState(null);
 	const [scannerOpen, setScannerOpen] = useState(false);
 	const [actionError, setActionError] = useState(null);
@@ -39,6 +41,16 @@ export default function SuppliesListPage() {
 	const searchPlaceholder = canScanBarcode
 		? 'Search supplies or scan code'
 		: 'Search supplies';
+
+	function toggleRequestSelection(item) {
+		setRequestItems((current) => {
+			const exists = current.some((entry) => entry.id === item.id);
+			if (exists) {
+				return current.filter((entry) => entry.id !== item.id);
+			}
+			return [...current, item];
+		});
+	}
 
 	async function handleRemove(supply) {
 		if (isReadOnlyAdmin) return;
@@ -99,10 +111,16 @@ export default function SuppliesListPage() {
 				<div className="flex justify-end gap-2">
 					{canRequest && r.stock_quantity > 0 && (
 						<button
-							className="btn-primary btn-sm"
-							onClick={() => setRequestTarget(r)}
+							className={
+								requestItems.some((item) => item.id === r.id)
+									? 'btn-secondary btn-sm'
+									: 'btn-primary btn-sm'
+							}
+							onClick={() => toggleRequestSelection(r)}
 						>
-							Request
+							{requestItems.some((item) => item.id === r.id)
+								? 'Selected'
+								: 'Add to request'}
 						</button>
 					)}
 					{canManage && (
@@ -152,17 +170,27 @@ export default function SuppliesListPage() {
 						Consumable items such as coupon bond, paper, and pens.
 					</p>
 				</div>
-				{canManage && (
-					<Button
-						disabled={isReadOnlyAdmin}
-						onClick={() => {
-							setEditing(null);
-							setFormOpen(true);
-						}}
-					>
-						<Icon name="plus" className="h-4 w-4" /> Add Supply
-					</Button>
-				)}
+				<div className="flex items-center gap-2">
+					{canManage && (
+						<Button
+							disabled={isReadOnlyAdmin}
+							onClick={() => {
+								setEditing(null);
+								setFormOpen(true);
+							}}
+						>
+							<Icon name="plus" className="h-4 w-4" /> Add Supply
+						</Button>
+					)}
+					{requestItems.length > 0 && (
+						<Button
+							variant="secondary"
+							onClick={() => setRequestDialogOpen(true)}
+						>
+							Review selected ({requestItems.length})
+						</Button>
+					)}
+				</div>
 			</div>
 
 			<Card>
@@ -210,22 +238,34 @@ export default function SuppliesListPage() {
 				onSaved={refetch}
 			/>
 			<NewSupplyRequestModal
-				open={!!requestTarget}
-				onClose={() => setRequestTarget(null)}
+				open={requestDialogOpen}
+				onClose={() => {
+					setRequestDialogOpen(false);
+					setRequestTarget(null);
+					setRequestItems([]);
+				}}
 				supply={requestTarget}
-				onSaved={refetch}
+				items={requestItems}
+				onSaved={() => {
+					refetch();
+					setRequestDialogOpen(false);
+					setRequestTarget(null);
+					setRequestItems([]);
+				}}
 			/>
 			{barcodeTarget && (
 				<SupplyBarcodeModal
 					open
 					onClose={() => setBarcodeTarget(null)}
 					supply={barcodeTarget}
+					scanEnabled={canScanBarcode}
 				/>
 			)}
 			{scannerOpen && (
 				<SupplyBarcodeModal
 					open
 					onClose={() => setScannerOpen(false)}
+					scanEnabled={canScanBarcode}
 					onScanned={(barcode) => {
 						setSearch(barcode);
 						setPage(1);

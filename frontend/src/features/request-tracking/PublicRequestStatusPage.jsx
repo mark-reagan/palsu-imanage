@@ -36,7 +36,7 @@ export default function PublicRequestStatusPage() {
 
 	if (error) {
 		return (
-			<div className="mx-auto max-w-xl">
+			<div className="mx-auto max-w-xl px-4 py-8">
 				<ErrorAlert error={error} />
 			</div>
 		);
@@ -44,8 +44,15 @@ export default function PublicRequestStatusPage() {
 
 	if (!result) {
 		return (
-			<div className="mx-auto max-w-xl text-sm text-slate-500">
-				Loading request status…
+			<div className="mx-auto max-w-5xl px-4 py-8">
+				<div
+					className="animate-pulse space-y-4"
+					aria-label="Loading request status"
+				>
+					<div className="h-7 w-36 rounded-lg bg-[var(--surface-muted)]" />
+					<div className="h-36 rounded-3xl bg-[var(--surface-muted)]" />
+					<div className="h-64 rounded-3xl bg-[var(--surface-muted)]" />
+				</div>
 			</div>
 		);
 	}
@@ -54,6 +61,7 @@ export default function PublicRequestStatusPage() {
 	const isAdmin = user?.role === ROLES.ADMIN;
 	const isStaff = user?.role === ROLES.STAFF;
 	const isEquipment = result.type === 'equipment';
+	const itemType = isEquipment ? 'Equipment request' : 'Supply request';
 	const itemName =
 		request.equipment?.name || request.supply?.name || 'Inventory request';
 
@@ -95,95 +103,148 @@ export default function PublicRequestStatusPage() {
 	const transactionId = request.transaction?.id;
 
 	return (
-		<div className="mx-auto mt-2 max-w-2xl space-y-4">
-			<div className="flex items-center">
+		<div className="mx-auto w-full max-w-5xl space-y-5 px-4 pb-8 pt-3 sm:pt-6">
+			<div className="flex items-center justify-between">
 				<Button
 					type="button"
 					variant="secondary"
 					size="sm"
 					onClick={() => navigate(-1)}
 				>
-					← Back
+					<span aria-hidden="true">←</span> Back
 				</Button>
+				<span className="hidden text-xs font-medium uppercase tracking-[0.18em] text-[var(--text-soft)] sm:block">
+					Request tracking
+				</span>
 			</div>
-			<div>
-				<p className="text-sm font-medium text-brand-700">Request status</p>
-				<h1 className="text-2xl font-bold text-slate-900">{itemName}</h1>
-				<p className="text-sm text-slate-500">
-					Tracking code: {request.tracking_token}
-				</p>
+			<div className="relative overflow-hidden rounded-3xl border border-[var(--border)] bg-[linear-gradient(135deg,var(--surface-strong),var(--surface-muted))] p-5 shadow-[0_18px_50px_var(--shadow)] sm:p-8">
+				<div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-[var(--accent-soft)] opacity-40 blur-3xl" />
+				<div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+					<div className="min-w-0">
+						<div className="mb-3 flex items-center gap-2">
+							<span
+								className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--accent-soft)] text-lg"
+								aria-hidden="true"
+							>
+								{isEquipment ? '▣' : '▤'}
+							</span>
+							<p className="text-sm font-semibold text-[var(--accent-strong)]">
+								{itemType}
+							</p>
+						</div>
+						<h1 className="break-words text-2xl font-bold tracking-tight text-[var(--text)] sm:text-3xl">
+							{itemName}
+						</h1>
+						<p className="mt-2 text-sm text-[var(--text-soft)]">
+							Submitted {formatDate(request.created_at)}
+						</p>
+						<div className="mt-4 inline-flex max-w-full flex-wrap items-center gap-x-2 gap-y-1 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm">
+							<span className="text-[var(--text-soft)]">Tracking code</span>
+							<span className="break-all font-mono font-semibold text-[var(--text)]">
+								{request.tracking_token}
+							</span>
+						</div>
+					</div>
+					<div className="flex shrink-0 items-center gap-3 self-start rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3 sm:self-center sm:px-4 sm:py-3">
+						<span
+							className="h-2.5 w-2.5 rounded-full bg-[var(--accent-strong)]"
+							aria-hidden="true"
+						/>
+						<div>
+							<p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]">
+								Current status
+							</p>
+							<div className="mt-1">
+								<Badge status={request.status} className="px-3 py-1 text-sm" />
+							</div>
+						</div>
+					</div>
+				</div>
 			</div>
 
-			<Card>
-				<div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
-					<dl className="grid flex-1 grid-cols-2 gap-4 text-sm">
-						<div>
-							<dt className="text-slate-500">Status</dt>
-							<dd>
-								<Badge status={request.status} />
+			<div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_280px]">
+				<Card title="Request details" className="h-full">
+					<dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+						<div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4">
+							<dt className="text-xs font-medium uppercase tracking-wide text-[var(--text-soft)]">
+								Quantity
+							</dt>
+							<dd className="mt-1 text-lg font-semibold text-[var(--text)]">
+								{request.quantity}
 							</dd>
 						</div>
-						<div>
-							<dt className="text-slate-500">Quantity</dt>
-							<dd className="font-medium text-slate-900">{request.quantity}</dd>
-						</div>
 						{request.start_date && (
-							<div>
-								<dt className="text-slate-500">Reservation</dt>
-								<dd className="font-medium text-slate-900">
+							<div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4">
+								<dt className="text-xs font-medium uppercase tracking-wide text-[var(--text-soft)]">
+									Reservation period
+								</dt>
+								<dd className="mt-1 font-semibold text-[var(--text)]">
 									{formatDate(request.start_date)} –{' '}
 									{formatDate(request.end_date)}
 								</dd>
 							</div>
 						)}
 						{request.purpose && (
-							<div className="col-span-2">
-								<dt className="text-slate-500">Purpose</dt>
-								<dd className="font-medium text-slate-900">
+							<div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 sm:col-span-2">
+								<dt className="text-xs font-medium uppercase tracking-wide text-[var(--text-soft)]">
+									Purpose
+								</dt>
+								<dd className="mt-1 whitespace-pre-wrap text-sm leading-6 text-[var(--text)]">
 									{request.purpose}
 								</dd>
 							</div>
 						)}
-						<div>
-							<dt className="text-slate-500">Submitted</dt>
-							<dd className="font-medium text-slate-900">
-								{formatDate(request.created_at)}
-							</dd>
-						</div>
 						{request.decline_reason && (
-							<div className="col-span-2">
-								<dt className="text-slate-500">Reason</dt>
-								<dd className="font-medium text-slate-900">
+							<div className="rounded-2xl border border-red-200 bg-red-50 p-4 sm:col-span-2">
+								<dt className="text-xs font-medium uppercase tracking-wide text-red-700">
+									Reason for decline
+								</dt>
+								<dd className="mt-1 text-sm leading-6 text-red-900">
 									{request.decline_reason}
 								</dd>
 							</div>
 						)}
 					</dl>
-					<div className="shrink-0 text-center">
+				</Card>
+
+				<Card className="flex flex-col items-center justify-center text-center">
+					<div className="mb-3 self-start text-left">
+						<h2 className="font-semibold text-[var(--text)]">
+							Keep this request handy
+						</h2>
+						<p className="mt-1 text-sm text-[var(--text-soft)]">
+							Scan the code to reopen this status page.
+						</p>
+					</div>
+					<div className="rounded-2xl border border-[var(--border)] bg-white p-3 shadow-sm">
 						<img
 							src={request.qr_url}
 							alt="QR code for request status"
-							className="mx-auto h-36 w-36"
+							className="h-40 w-40 max-w-full"
 						/>
-						<p className="mt-1 text-xs text-slate-500">Scan to reopen status</p>
-						<Button
-							type="button"
-							variant="secondary"
-							size="sm"
-							onClick={downloadQr}
-							loading={downloading}
-						>
-							Download QR
-						</Button>
 					</div>
-				</div>
+					<Button
+						type="button"
+						variant="secondary"
+						className="mt-4 w-full"
+						onClick={downloadQr}
+						loading={downloading}
+					>
+						Download QR code
+					</Button>
+				</Card>
+			</div>
 
-				<ErrorAlert error={actionError} className="mt-5" />
-				{(isAdmin || isStaff) && (
-					<div className="mt-5 flex flex-wrap gap-2 border-t border-slate-100 pt-4">
+			{(isAdmin || isStaff) && (
+				<Card title="Available actions">
+					<p className="mb-4 text-sm text-[var(--text-soft)]">
+						Manage this request according to its current status.
+					</p>
+					<div className="flex flex-col gap-2 sm:flex-row">
 						{isAdmin && request.status === 'pending' && (
 							<>
 								<Button
+									className="w-full sm:w-auto"
 									disabled={isReadOnlyAdmin}
 									onClick={() =>
 										refreshAfterAction(() =>
@@ -193,19 +254,21 @@ export default function PublicRequestStatusPage() {
 										)
 									}
 								>
-									Approve
+									Approve request
 								</Button>
 								<Button
+									className="w-full sm:w-auto"
 									variant="danger"
 									disabled={isReadOnlyAdmin}
 									onClick={() => setDeclineOpen(true)}
 								>
-									Decline
+									Decline request
 								</Button>
 							</>
 						)}
 						{isStaff && request.status === 'approved' && (
 							<Button
+								className="w-full sm:w-auto"
 								onClick={() =>
 									refreshAfterAction(() =>
 										isEquipment
@@ -214,26 +277,35 @@ export default function PublicRequestStatusPage() {
 									)
 								}
 							>
-								Release
+								Release item
 							</Button>
 						)}
 						{isStaff &&
 							isEquipment &&
 							request.status === 'released' &&
 							transactionId && (
-								<Button onClick={() => setReturnOpen(true)}>Return</Button>
+								<Button
+									className="w-full sm:w-auto"
+									onClick={() => setReturnOpen(true)}
+								>
+									Return item
+								</Button>
 							)}
 					</div>
-				)}
-			</Card>
+					<ErrorAlert error={actionError} className="mt-4" />
+				</Card>
+			)}
 
 			{!user && (
-				<p className="text-center text-sm text-slate-500">
-					<Link className="text-brand-700 hover:underline" to="/login">
+				<div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 text-center text-sm text-[var(--text-soft)] sm:p-5">
+					<Link
+						className="font-semibold text-[var(--accent-strong)] hover:underline"
+						to="/login"
+					>
 						Sign in
 					</Link>{' '}
 					to manage this request.
-				</p>
+				</div>
 			)}
 
 			<DeclineReasonModal

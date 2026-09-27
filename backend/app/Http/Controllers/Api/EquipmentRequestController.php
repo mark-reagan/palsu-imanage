@@ -51,6 +51,63 @@ class EquipmentRequestController extends Controller
         $user = $request->user();
         $data = $request->validated();
 
+        if ($request->filled('items')) {
+            $requests = collect();
+
+            foreach ($data['items'] as $item) {
+                $equipment = Equipment::findOrFail($item['equipment_id']);
+
+                if (! $equipment->is_active) {
+                    return response()->json(['message' => "This equipment is not available for request: {$equipment->name}.",], 422);
+                }
+
+                if ($item['quantity'] > $equipment->available_quantity) {
+                    throw ValidationException::withMessages([
+                        'items' => ["Only {$equipment->available_quantity} unit(s) currently available for {$equipment->name}.",],
+                    ]);
+                }
+
+                $requests->push([
+                    'equipment' => $equipment,
+                    'item' => $item,
+                ]);
+            }
+
+            $created = collect();
+            foreach ($requests as $requestEntry) {
+                $equipment = $requestEntry['equipment'];
+                $item = $requestEntry['item'];
+
+                $equipmentRequest = EquipmentRequest::create([
+                    'user_id' => $user->id,
+                    'equipment_id' => $equipment->id,
+                    'quantity' => $item['quantity'],
+                    'purpose' => $item['purpose'],
+                    'start_date' => $item['start_date'],
+                    'end_date' => $item['end_date'],
+                    'status' => 'pending',
+                ]);
+
+                User::query()
+                    ->where('role', 'admin')
+                    ->where('is_active', true)
+                    ->get()
+                    ->each(fn (User $admin) => $admin->notify(new NewRequestNotification(
+                        'equipment',
+                        $equipmentRequest->id,
+                        $equipment->name,
+                        $user->name,
+                    )));
+
+                $created->push($equipmentRequest->fresh(['equipment']));
+            }
+
+            return response()->json([
+                'message' => 'Equipment requests created successfully.',
+                'data' => $created->map(fn (EquipmentRequest $item) => new EquipmentRequestResource($item))->values()->all(),
+            ], 201);
+        }
+
         $equipment = Equipment::findOrFail($data['equipment_id']);
 
         if (! $equipment->is_active) {
