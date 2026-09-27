@@ -19,14 +19,14 @@ Modernize the application UI and UX while keeping the existing role-based invent
 
 ## Phase 2: Design System and Visual Refresh
 
-- [ ] Apply a modern, uniform color palette with yellow/orange accents
-- [ ] Add a dark-mode toggle with consistent theme styling across all screens
-- [ ] Improve hierarchy and spacing across all pages and components
-- [ ] Standardize card, table, button, badge, modal, and form styling
-- [ ] Make the design more mobile-friendly for all layouts
-- [ ] Add skeleton/loading states for major page sections and list views
-- [ ] Add smooth transitions for page switching, menu open/close, modal open/close, and tab changes
-- [ ] Improve responsive behavior for desktop, tablet, and mobile views
+- [x] Apply a modern, uniform color palette with yellow/orange accents
+- [x] Add a dark-mode toggle with consistent theme styling across all screens
+- [x] Improve hierarchy and spacing across all pages and components
+- [x] Standardize card, table, button, badge, modal, and form styling
+- [x] Make the design more mobile-friendly for all layouts
+- [x] Add skeleton/loading states for major page sections and list views
+- [x] Add smooth transitions for page switching, menu open/close, modal open/close, and tab changes
+- [x] Improve responsive behavior for desktop, tablet, and mobile views
 
 ## Phase 3: App Layout and Navigation
 

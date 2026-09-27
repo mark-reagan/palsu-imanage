@@ -26,14 +26,17 @@ const PATHS = {
 	close: 'M6 18L18 6M6 6l12 12',
 	check: 'M4.5 12.75l6 6 9-13.5',
 	plus: 'M12 4.5v15m7.5-7.5h-15',
+	moon: 'M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z',
+	sun: 'M12 3v2.25M12 18.75V21M4.93 4.93l1.59 1.59M17.48 17.48l1.59 1.59M3 12h2.25M18.75 12H21M4.93 19.07l1.59-1.59M17.48 6.52l1.59-1.59M12 6.75A5.25 5.25 0 1017.25 12 5.25 5.25 0 0012 6.75z',
 };
 
-export default function Icon({ name, className = 'h-5 w-5' }) {
+export default function Icon({ name, className = 'h-5 w-5', style }) {
 	const d = PATHS[name];
 	if (!d) return null;
 	return (
 		<svg
 			className={className}
+			style={style}
 			fill="none"
 			viewBox="0 0 24 24"
 			strokeWidth={1.5}

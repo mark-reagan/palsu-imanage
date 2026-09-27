@@ -1,6 +1,6 @@
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from './useAuth';
-import Spinner from '../../components/ui/Spinner';
+import PageSkeleton from '../../components/ui/PageSkeleton';
 
 /**
  * Keeps already-authenticated users away from /login.
@@ -10,8 +10,10 @@ export default function PublicOnlyRoute() {
 
 	if (initializing) {
 		return (
-			<div className="flex min-h-screen items-center justify-center">
-				<Spinner label="Loading…" />
+			<div className="flex min-h-screen items-center justify-center px-4 py-8">
+				<div className="w-full max-w-3xl">
+					<PageSkeleton rows={2} />
+				</div>
 			</div>
 		);
 	}

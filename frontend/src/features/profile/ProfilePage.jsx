@@ -68,7 +68,9 @@ export default function ProfilePage() {
 					</div>
 					<div>
 						<p className="font-medium text-slate-900">{user.email}</p>
-						<Badge status={user.role}>{user.role}</Badge>
+						<Badge status={user.role} className="profile-role-badge">
+							{user.role}
+						</Badge>
 					</div>
 				</div>
 

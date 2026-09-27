@@ -1,5 +1,5 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
-import Spinner from '../../components/ui/Spinner';
+import PageSkeleton from '../../components/ui/PageSkeleton';
 import { useAuth } from './useAuth';
 
 export default function ProtectedRoute({ roles }) {
@@ -8,8 +8,10 @@ export default function ProtectedRoute({ roles }) {
 
 	if (initializing) {
 		return (
-			<div className="flex min-h-screen items-center justify-center">
-				<Spinner label="Loading your session…" />
+			<div className="flex min-h-screen items-center justify-center px-4 py-8">
+				<div className="w-full max-w-5xl">
+					<PageSkeleton rows={3} />
+				</div>
 			</div>
 		);
 	}

@@ -3,14 +3,24 @@ import { BrowserRouter } from 'react-router-dom';
 import ErrorBoundary from '../components/ui/ErrorBoundary';
 import { AuthProvider } from '../features/auth/AuthContext';
 import AppRoutes from './routes';
+import { ThemeProvider } from './themeContext';
 
 export default function App() {
+	const [theme, setTheme] = useState(() => {
+		const saved = localStorage.getItem('palsu-theme');
+		return saved || 'light';
+	});
 	const [booting, setBooting] = useState(true);
 
 	useEffect(() => {
 		const timer = window.setTimeout(() => setBooting(false), 700);
 		return () => window.clearTimeout(timer);
 	}, []);
+
+	useEffect(() => {
+		document.documentElement.dataset.theme = theme;
+		localStorage.setItem('palsu-theme', theme);
+	}, [theme]);
 
 	if (booting) {
 		return (
@@ -26,7 +36,7 @@ export default function App() {
 							PalSU-iManage
 						</p>
 						<p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.35em] text-amber-700">
-							Inventory System
+							Smarter Management
 						</p>
 					</div>
 					<div className="h-1.5 w-32 overflow-hidden rounded-full bg-orange-100">
@@ -38,12 +48,19 @@ export default function App() {
 	}
 
 	return (
-		<ErrorBoundary>
-			<BrowserRouter>
-				<AuthProvider>
-					<AppRoutes />
-				</AuthProvider>
-			</BrowserRouter>
-		</ErrorBoundary>
+		<ThemeProvider
+			theme={theme}
+			toggleTheme={() =>
+				setTheme((current) => (current === 'light' ? 'dark' : 'light'))
+			}
+		>
+			<ErrorBoundary>
+				<BrowserRouter>
+					<AuthProvider>
+						<AppRoutes />
+					</AuthProvider>
+				</BrowserRouter>
+			</ErrorBoundary>
+		</ThemeProvider>
 	);
 }

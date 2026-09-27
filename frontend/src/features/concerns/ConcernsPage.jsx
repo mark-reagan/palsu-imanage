@@ -49,7 +49,7 @@ export default function ConcernsPage() {
 		{
 			key: 'severity',
 			header: 'Severity',
-			render: (r) => <Badge status={r.severity} />,
+			render: (r) => <Badge status={r.severity} className="severity-badge" />,
 		},
 		{
 			key: 'description',

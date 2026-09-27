@@ -10,10 +10,10 @@ export default function DashboardPage() {
 	return (
 		<div className="space-y-4">
 			<div>
-				<h1 className="text-xl font-bold text-slate-900">
+				<h1 className="text-xl font-bold text-[var(--text)]">
 					Welcome back, {user.name}
 				</h1>
-				<p className="text-sm text-slate-500">
+				<p className="text-sm text-[var(--text-soft)]">
 					Here&apos;s what&apos;s happening in the inventory system today.
 				</p>
 			</div>

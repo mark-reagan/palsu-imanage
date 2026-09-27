@@ -90,7 +90,10 @@ export default function EquipmentRequestsPage() {
 			key: 'tracking',
 			header: 'QR',
 			render: (r) => (
-				<a className="text-brand-700 hover:underline" href={r.tracking_url}>
+				<a
+					className="text-[var(--accent-strong)] hover:text-[var(--accent)] hover:underline"
+					href={r.tracking_url}
+				>
 					Open
 				</a>
 			),

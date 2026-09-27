@@ -58,7 +58,7 @@ export default function NotificationsPage() {
 										key={notification.id}
 										onClick={() => handleMarkRead(notification.id)}
 										disabled={isReadOnlyAdmin}
-										className="block w-full px-2 py-4 text-left hover:bg-slate-50"
+										className="block w-full px-2 py-4 text-left hover:bg-[var(--surface-muted)]"
 									>
 										<div className="flex items-start justify-between gap-4">
 											<div>

@@ -2,35 +2,193 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+	--bg: #fffaf5;
+	--bg-soft: #fff7ed;
+	--surface: rgba(255, 255, 255, 0.9);
+	--surface-strong: #ffffff;
+	--surface-muted: #fff5ea;
+	--border: rgba(251, 146, 60, 0.18);
+	--text: #1f2937;
+	--text-soft: #6b7280;
+	--accent: #f59e0b;
+	--accent-strong: #ea580c;
+	--accent-soft: #fed7aa;
+	--shadow: rgba(120, 53, 15, 0.08);
+}
+
+html[data-theme='dark'] {
+	--bg: #111827;
+	--bg-soft: #1f2937;
+	--surface: rgba(31, 41, 55, 0.88);
+	--surface-strong: #1f2937;
+	--surface-muted: #2b2f3a;
+	--border: rgba(251, 146, 60, 0.2);
+	--text: #f8fafc;
+	--text-soft: #e2e8f0;
+	--accent: #fbbf24;
+	--accent-strong: #fb923c;
+	--accent-soft: rgba(251, 146, 60, 0.15);
+	--shadow: rgba(0, 0, 0, 0.25);
+}
+
+html[data-theme='dark']
+	[class*='text-slate-']:not(.brand-text):not(.brand-subtitle):not(
+		.mobile-close-button
+	):not(.theme-badge),
+html[data-theme='dark']
+	[class*='text-gray-']:not(.brand-text):not(.brand-subtitle):not(
+		.mobile-close-button
+	):not(.theme-badge) {
+	color: #e2e8f0 !important;
+}
+
+html[data-theme='dark']
+	[class*='text-slate-']
+	svg:not(.brand-text):not(.brand-subtitle):not(.mobile-close-button),
+html[data-theme='dark']
+	[class*='text-gray-']
+	svg:not(.brand-text):not(.brand-subtitle):not(.mobile-close-button) {
+	color: #e2e8f0 !important;
+}
+
+html[data-theme='dark'] .brand-text,
+html[data-theme='dark'] .brand-text svg,
+html[data-theme='dark'] .brand-subtitle,
+html[data-theme='dark'] .brand-subtitle svg {
+	color: #1f2937 !important;
+}
+
+html[data-theme='dark'] button.mobile-close-button,
+html[data-theme='dark'] button.mobile-close-button svg,
+html[data-theme='dark'] button.mobile-close-button path {
+	color: #1f2937 !important;
+	stroke: #1f2937 !important;
+}
+
+.profile-role-badge {
+	background-color: var(--surface-muted);
+	color: var(--text);
+}
+
+html[data-theme='dark'] .theme-badge {
+	background-color: var(--surface-muted) !important;
+	color: var(--text) !important;
+}
+
+html[data-theme='dark'] .theme-badge[data-status='pending'],
+html[data-theme='dark'] .theme-badge[data-status='fair'],
+html[data-theme='dark'] .theme-badge[data-status='partially_available'],
+html[data-theme='dark'] .theme-badge[data-status='open'] {
+	background-color: #78350f !important;
+	color: #fef3c7 !important;
+}
+
+html[data-theme='dark'] .theme-badge[data-status='approved'],
+html[data-theme='dark'] .theme-badge[data-status='reviewed'] {
+	background-color: #1e3a8a !important;
+	color: #dbeafe !important;
+}
+
+html[data-theme='dark'] .theme-badge[data-status='declined'],
+html[data-theme='dark'] .theme-badge[data-status='damaged'],
+html[data-theme='dark'] .theme-badge[data-status='unavailable'],
+html[data-theme='dark'] .theme-badge[data-status='critical'] {
+	background-color: #7f1d1d !important;
+	color: #fee2e2 !important;
+}
+
+html[data-theme='dark'] .theme-badge[data-status='cancelled'],
+html[data-theme='dark'] .theme-badge[data-status='lost'],
+html[data-theme='dark'] .theme-badge[data-status='minor'] {
+	background-color: #374151 !important;
+	color: #e5e7eb !important;
+}
+
+html[data-theme='dark'] .theme-badge[data-status='released'] {
+	background-color: #3730a3 !important;
+	color: #e0e7ff !important;
+}
+
+html[data-theme='dark'] .theme-badge[data-status='returned'] {
+	background-color: #134e4a !important;
+	color: #ccfbf1 !important;
+}
+
+html[data-theme='dark'] .theme-badge[data-status='completed'],
+html[data-theme='dark'] .theme-badge[data-status='good'],
+html[data-theme='dark'] .theme-badge[data-status='available'],
+html[data-theme='dark'] .theme-badge[data-status='resolved'] {
+	background-color: #14532d !important;
+	color: #dcfce7 !important;
+}
+
+html[data-theme='dark'] .theme-badge[data-status='under_repair'],
+html[data-theme='dark'] .theme-badge[data-status='major'] {
+	background-color: #7c2d12 !important;
+	color: #ffedd5 !important;
+}
+
 @layer base {
-  html {
-    @apply bg-slate-50 text-slate-900;
-  }
+	html {
+		@apply bg-[var(--bg)] text-[var(--text)] antialiased;
+	}
+
+	body {
+		background: var(--bg);
+		color: var(--text);
+		transition:
+			background-color 0.2s ease,
+			color 0.2s ease;
+	}
+
+	* {
+		transition:
+			background-color 0.2s ease,
+			border-color 0.2s ease,
+			color 0.2s ease,
+			box-shadow 0.2s ease,
+			transform 0.2s ease;
+	}
 }
 
 @layer components {
-  .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50;
-  }
-  .btn-primary {
-    @apply btn bg-brand-700 text-white hover:bg-brand-800 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2;
-  }
-  .btn-secondary {
-    @apply btn bg-white text-slate-700 ring-1 ring-inset ring-slate-300 hover:bg-slate-50;
-  }
-  .btn-danger {
-    @apply btn bg-red-600 text-white hover:bg-red-700;
-  }
-  .btn-sm {
-    @apply px-3 py-1.5 text-xs;
-  }
-  .input {
-    @apply block w-full rounded-lg border-0 py-2 px-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-600 disabled:bg-slate-100;
-  }
-  .label {
-    @apply mb-1 block text-sm font-medium text-slate-700;
-  }
-  .card {
-    @apply rounded-xl bg-white p-5 shadow-sm ring-1 ring-slate-200;
-  }
+	.btn {
+		@apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50;
+	}
+	.btn-primary {
+		@apply btn bg-gradient-to-r from-yellow-500 to-orange-500 text-white shadow-sm hover:from-yellow-400 hover:to-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-300 focus:ring-offset-2;
+	}
+	.btn-secondary {
+		@apply btn bg-[var(--surface)] text-[var(--text)] ring-1 ring-inset ring-[var(--border)] hover:bg-[var(--surface-muted)];
+	}
+	.btn-danger {
+		@apply btn bg-red-600 text-white hover:bg-red-700;
+	}
+	.btn-sm {
+		@apply px-3 py-1.5 text-xs;
+	}
+	.input {
+		@apply block w-full rounded-xl border-0 bg-[var(--surface)] py-2.5 px-3 text-sm text-[var(--text)] ring-1 ring-inset ring-[var(--border)] placeholder:text-[var(--text-soft)] focus:outline-none focus:ring-2 focus:ring-orange-300 disabled:bg-slate-100;
+	}
+	.label {
+		@apply mb-1 block text-sm font-medium text-[var(--text-soft)];
+	}
+	.card {
+		@apply rounded-2xl bg-[var(--surface)] p-5 shadow-sm ring-1 ring-[var(--border)] backdrop-blur-sm;
+	}
+}
+
+@layer utilities {
+	.surface-soft {
+		background: var(--surface);
+	}
+
+	.surface-card {
+		background: var(--surface-strong);
+	}
+
+	.shadow-soft {
+		box-shadow: 0 10px 30px var(--shadow);
+	}
 }

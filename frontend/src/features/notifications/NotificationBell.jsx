@@ -53,7 +53,7 @@ export default function NotificationBell() {
 		<div className="relative" ref={ref}>
 			<button
 				onClick={() => setOpen((o) => !o)}
-				className="relative rounded-full p-2 text-slate-500 hover:bg-slate-100"
+				className="relative rounded-full p-2 text-[var(--text-soft)] hover:bg-[var(--surface-muted)]"
 				aria-label="Notifications"
 			>
 				<svg
@@ -78,9 +78,9 @@ export default function NotificationBell() {
 			</button>
 
 			{open && (
-				<div className="absolute right-0 z-20 mt-2 w-80 rounded-xl bg-white p-2 shadow-lg ring-1 ring-slate-200">
+				<div className="absolute right-0 z-20 mt-2 w-80 rounded-xl bg-[var(--surface-strong)] p-2 shadow-lg ring-1 ring-[var(--border)]">
 					<div className="flex items-center justify-between px-2 py-1">
-						<p className="text-sm font-semibold text-slate-900">
+						<p className="text-sm font-semibold text-[var(--text)]">
 							Notifications
 						</p>
 						<div className="flex items-center gap-3">
@@ -102,7 +102,7 @@ export default function NotificationBell() {
 					</div>
 					<div className="max-h-80 overflow-y-auto">
 						{items.length === 0 ? (
-							<p className="px-2 py-6 text-center text-sm text-slate-400">
+							<p className="px-2 py-6 text-center text-sm text-[var(--text-soft)]">
 								You&apos;re all caught up.
 							</p>
 						) : (
@@ -111,18 +111,22 @@ export default function NotificationBell() {
 									key={n.id}
 									onClick={() => handleMarkOne(n.id)}
 									disabled={isReadOnlyAdmin}
-									className="block w-full rounded-lg px-2 py-2 text-left text-sm hover:bg-slate-50"
+									className="block w-full rounded-lg px-2 py-2 text-left text-sm hover:bg-[var(--surface-muted)]"
 								>
-									<p className="font-medium text-slate-800">
+									<p className="font-medium text-[var(--text)]">
 										{n.data?.title || 'Notification'}
 									</p>
 									{n.data?.item_name && (
-										<p className="text-slate-500">{n.data.item_name}</p>
+										<p className="text-[var(--text-soft)]">
+											{n.data.item_name}
+										</p>
 									)}
 									{n.data?.reason && (
-										<p className="text-slate-500">Reason: {n.data.reason}</p>
+										<p className="text-[var(--text-soft)]">
+											Reason: {n.data.reason}
+										</p>
 									)}
-									<p className="mt-0.5 text-xs text-slate-400">
+									<p className="mt-0.5 text-xs text-[var(--text-soft)]">
 										{formatDateTime(n.created_at)}
 									</p>
 								</button>

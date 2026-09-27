@@ -73,7 +73,7 @@ export default function EquipmentListPage() {
 			header: 'Barcode',
 			render: (r) => (
 				<button
-					className="font-mono text-xs text-brand-700 hover:underline"
+					className="font-mono text-xs text-[var(--accent-strong)] hover:text-[var(--accent)] hover:underline"
 					onClick={() => setBarcodeTarget(r)}
 				>
 					{r.barcode}

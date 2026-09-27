@@ -5,7 +5,7 @@ import AppLayout from '../layouts/AppLayout';
 import ProtectedRoute from '../features/auth/ProtectedRoute';
 import PublicOnlyRoute from '../features/auth/PublicOnlyRoute';
 import { ROLES } from '../lib/constants';
-import Spinner from '../components/ui/Spinner';
+import PageSkeleton from '../components/ui/PageSkeleton';
 
 // Route-level code splitting: each page is only downloaded when visited.
 const LoginPage = lazy(() => import('../features/auth/LoginPage'));
@@ -39,7 +39,7 @@ const PublicRequestStatusPage = lazy(
 
 export default function AppRoutes() {
 	return (
-		<Suspense fallback={<Spinner label="Loading page…" />}>
+		<Suspense fallback={<PageSkeleton />}>
 			<Routes>
 				<Route element={<PublicOnlyRoute />}>
 					<Route element={<AuthLayout />}>

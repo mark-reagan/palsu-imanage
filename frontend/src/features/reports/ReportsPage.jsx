@@ -257,15 +257,15 @@ export default function ReportsPage() {
 				</p>
 			</div>
 
-			<div className="flex flex-wrap gap-1 rounded-lg bg-slate-100 p-1">
+			<div className="flex flex-wrap gap-1 rounded-lg bg-[var(--surface-muted)] p-1">
 				{TABS.map((t) => (
 					<button
 						key={t.key}
 						onClick={() => setTab(t.key)}
 						className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
 							tab === t.key
-								? 'bg-white text-brand-700 shadow-sm'
-								: 'text-slate-500 hover:text-slate-700'
+								? 'bg-[var(--surface-strong)] text-[var(--accent-strong)] shadow-sm'
+								: 'text-[var(--text-soft)] hover:text-[var(--text)]'
 						}`}
 					>
 						{t.label}
