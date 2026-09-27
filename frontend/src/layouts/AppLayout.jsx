@@ -12,7 +12,11 @@ import { useTheme } from '../app/useTheme';
 
 function SidebarLinks({ role, onNavigate, mobile = false }) {
 	return (
-		<nav className="flex-1 space-y-1 px-3 pt-2" role="navigation" aria-label="Main menu">
+		<nav
+			className="flex-1 space-y-1 px-3 pt-2"
+			role="navigation"
+			aria-label="Main menu"
+		>
 			{NAV_ITEMS.filter((item) => !item.roles || item.roles.includes(role)).map(
 				(item) => (
 					<NavLink
@@ -32,7 +36,11 @@ function SidebarLinks({ role, onNavigate, mobile = false }) {
 							}`
 						}
 					>
-						<Icon name={item.icon} className="h-5 w-5 shrink-0" aria-hidden="true" />
+						<Icon
+							name={item.icon}
+							className="h-5 w-5 shrink-0"
+							aria-hidden="true"
+						/>
 						<span>{item.label}</span>
 					</NavLink>
 				),
@@ -142,9 +150,14 @@ export default function AppLayout() {
 								alt="PalSU-iManage logo"
 								className="h-8 w-8"
 							/>
-							<span className="brand-text text-sm font-black tracking-tight text-slate-800">
-								PalSU-iManage
-							</span>
+							<div className="leading-tight">
+								<span className="brand-text block text-sm font-black tracking-tight text-slate-800">
+									PalSU-iManage
+								</span>
+								<span className="brand-subtitle block text-[10px] font-semibold uppercase tracking-[0.2em] text-orange-600">
+									Smarter Management
+								</span>
+							</div>
 						</div>
 						<button
 							onClick={() => setMobileOpen(false)}
@@ -164,6 +177,14 @@ export default function AppLayout() {
 						onNavigate={() => setMobileOpen(false)}
 						mobile
 					/>
+					<div className="mt-auto border-t border-white/10 p-3">
+						<p className="truncate px-3 text-xs text-orange-100/90">
+							Signed in as
+						</p>
+						<p className="truncate px-3 text-sm font-medium text-white">
+							{user.name}
+						</p>
+					</div>
 				</aside>
 			</div>
 
@@ -176,7 +197,10 @@ export default function AppLayout() {
 					>
 						<Icon name="menu" className="h-6 w-6" />
 					</button>
-					<span className="hidden text-sm font-medium capitalize text-[var(--text-soft)] lg:block" aria-live="polite">
+					<span
+						className="hidden text-sm font-medium capitalize text-[var(--text-soft)] lg:block"
+						aria-live="polite"
+					>
 						{user.role} portal
 					</span>
 					<div className="flex items-center gap-3">
