@@ -85,7 +85,7 @@ export default function NotificationsPage() {
 				<ErrorAlert error={error} />
 				{!loading && !error && (
 					<>
-						<div className="divide-y divide-[var(--border)]">
+						<div className="space-y-1">
 							{data?.data?.length ? (
 								data.data.map((notification) => (
 									<button
