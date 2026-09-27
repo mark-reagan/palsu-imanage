@@ -58,7 +58,7 @@ export default function ReviewConcernModal({
 				title={`Review Concern — ${concern?.equipment?.name || ''}`}
 			>
 				<form onSubmit={handleSubmit} className="space-y-4">
-					<p className="rounded-lg bg-slate-50 p-3 text-sm text-slate-600">
+					<p className="rounded-lg border border-[var(--border)] bg-[var(--surface-muted)] p-3 text-sm text-[var(--text-soft)]">
 						{concern?.description}
 					</p>
 
