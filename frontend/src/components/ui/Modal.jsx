@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 
 export default function Modal({
 	open,
@@ -35,8 +36,12 @@ export default function Modal({
 
 	const widthClass = { sm: 'max-w-sm', md: 'max-w-lg', lg: 'max-w-2xl' }[size];
 
-	return (
-		<div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-3 sm:p-4" role="dialog" aria-modal="true">
+	return createPortal(
+		<div
+			className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-3 sm:p-4"
+			role="dialog"
+			aria-modal="true"
+		>
 			<div
 				ref={overlayRef}
 				className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
@@ -50,7 +55,10 @@ export default function Modal({
 				className={`relative z-10 my-auto max-h-[calc(100dvh-1.5rem)] w-full overflow-y-auto touch-manipulation ${widthClass} rounded-2xl border border-[var(--border)] bg-[var(--surface-strong)] p-4 text-[var(--text)] shadow-soft sm:max-h-[calc(100dvh-2rem)] sm:p-6 interactive-focus`}
 			>
 				<div className="mb-4 flex items-start justify-between gap-3">
-					<h3 className="min-w-0 text-lg font-semibold text-[var(--text)]" id="modal-title">
+					<h3
+						className="min-w-0 text-lg font-semibold text-[var(--text)]"
+						id="modal-title"
+					>
 						{title}
 					</h3>
 					<button
@@ -76,8 +84,11 @@ export default function Modal({
 					</button>
 				</div>
 				<div>{children}</div>
-				{footer && <div className="mt-6 flex flex-wrap justify-end gap-2">{footer}</div>}
+				{footer && (
+					<div className="mt-6 flex flex-wrap justify-end gap-2">{footer}</div>
+				)}
 			</div>
-		</div>
+		</div>,
+		document.body,
 	);
 }
