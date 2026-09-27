@@ -11,6 +11,7 @@ const EMPTY = {
 	name: '',
 	email: '',
 	password: '',
+	password_confirmation: '',
 	role: 'faculty',
 	department: '',
 	contact_number: '',
@@ -30,6 +31,7 @@ function UserFormModalContent({ open, onClose, onSaved, user }) {
 					name: user.name,
 					email: user.email,
 					password: '',
+					password_confirmation: '',
 					role: user.role,
 					department: user.department || '',
 					contact_number: user.contact_number || '',
@@ -47,10 +49,21 @@ function UserFormModalContent({ open, onClose, onSaved, user }) {
 		e.preventDefault();
 		if (isReadOnlyAdmin) return;
 		setError(null);
+		if (form.password && form.password !== form.password_confirmation) {
+			setError('Password confirmation does not match.');
+			return;
+		}
+		if (!isEdit && !form.password_confirmation) {
+			setError('Please confirm the password.');
+			return;
+		}
 		setLoading(true);
 		try {
 			const payload = { ...form };
-			if (isEdit && !payload.password) delete payload.password;
+			if (isEdit && !payload.password) {
+				delete payload.password;
+				delete payload.password_confirmation;
+			}
 			const saved = isEdit
 				? await usersApi.update(user.id, payload)
 				: await usersApi.create(payload);
@@ -116,9 +129,21 @@ function UserFormModalContent({ open, onClose, onSaved, user }) {
 					}
 					type="password"
 					name="password"
+					autoComplete="new-password"
+					minLength={8}
 					required={!isEdit}
 					value={form.password}
 					onChange={(e) => update('password', e.target.value)}
+				/>
+				<Input
+					label={isEdit ? 'Confirm new password' : 'Confirm password'}
+					type="password"
+					name="password_confirmation"
+					autoComplete="new-password"
+					minLength={8}
+					required={!isEdit || Boolean(form.password)}
+					value={form.password_confirmation}
+					onChange={(e) => update('password_confirmation', e.target.value)}
 				/>
 
 				<ErrorAlert error={error} />

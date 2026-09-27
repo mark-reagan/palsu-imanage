@@ -8,9 +8,9 @@ export default function ProtectedRoute({ roles }) {
 
 	if (initializing) {
 		return (
-			<div className="flex min-h-screen items-center justify-center px-4 py-8">
-				<div className="w-full max-w-5xl">
-					<PageSkeleton rows={3} />
+			<div className="flex min-h-screen items-center justify-center bg-[var(--bg)] px-4 py-8">
+				<div className="w-full max-w-sm rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-soft">
+					<PageSkeleton rows={1} branded />
 				</div>
 			</div>
 		);

@@ -19,7 +19,7 @@ class UpdateUserRequest extends FormRequest
         return [
             'name' => ['sometimes', 'string', 'max:255'],
             'email' => ['sometimes', 'email', Rule::unique('users', 'email')->ignore($user)],
-            'password' => ['sometimes', 'string', 'min:8'],
+            'password' => ['sometimes', 'string', 'min:8', 'confirmed'],
             'role' => ['sometimes', Rule::in(['admin', 'faculty', 'staff', 'outsider'])],
             'department' => ['nullable', 'string', 'max:255'],
             'contact_number' => ['nullable', 'string', 'max:50'],

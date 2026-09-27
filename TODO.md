@@ -40,10 +40,10 @@ Modernize the application UI and UX while keeping the existing role-based invent
 
 ## Phase 4: Authentication and Account Creation
 
-- [ ] Add confirm password input during account creation/registration
-- [ ] Improve login screen styling to match the new app theme
-- [ ] Add a branded loading or splash state during authentication checks
-- [ ] Keep role-based login flows consistent after UI changes
+- [x] Add confirm password input during admin-managed account creation and password changes; public registration remains disabled
+- [x] Improve login screen styling to match the new app theme
+- [x] Add a branded loading or splash state during authentication checks
+- [x] Keep role-based login flows consistent after UI changes
 
 ## Phase 5: Notifications System
 

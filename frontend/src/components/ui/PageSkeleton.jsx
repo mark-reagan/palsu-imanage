@@ -1,10 +1,21 @@
-export default function PageSkeleton({ rows = 4 }) {
+export default function PageSkeleton({ rows = 4, branded = false }) {
 	return (
 		<div
 			className="space-y-6 animate-pulse"
 			aria-live="polite"
 			aria-busy="true"
 		>
+			{branded && (
+				<div className="flex flex-col items-center gap-3 pb-2 text-center">
+					<img
+						src="/palsu-imanage/palsu-imanage-logo.svg"
+						alt="PalSU-iManage"
+						className="h-12 w-12"
+					/>
+					<div className="h-5 w-36 rounded-lg bg-[var(--surface-muted)]" />
+					<div className="h-3 w-24 rounded-lg bg-[var(--surface-muted)]" />
+				</div>
+			)}
 			<div className="space-y-3">
 				<div className="h-8 w-56 rounded-xl bg-[var(--surface-muted)]" />
 				<div className="h-4 w-72 rounded-lg bg-[var(--surface-muted)]" />
