@@ -30,7 +30,7 @@ export default function LoginPage() {
 	}
 
 	return (
-		<div className="w-full max-w-sm rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-soft backdrop-blur-sm">
+		<div className="w-full max-w-sm rounded-t-none rounded-b-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-soft backdrop-blur-sm">
 			<h1 className="mb-1 text-2xl font-bold text-[var(--text)]">
 				Welcome back
 			</h1>
@@ -64,6 +64,9 @@ export default function LoginPage() {
 					Sign in
 				</Button>
 			</form>
+			<p className="mt-4 text-center text-sm text-[var(--text-soft)]">
+				Having trouble signing in? Please reach out to your administrator.
+			</p>
 		</div>
 	);
 }
