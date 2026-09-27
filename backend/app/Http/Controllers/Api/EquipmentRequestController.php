@@ -25,7 +25,7 @@ class EquipmentRequestController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        $query = EquipmentRequest::with(['equipment', 'user', 'approver']);
+        $query = EquipmentRequest::with(['equipment', 'user', 'approver', 'transaction.releasedBy', 'transaction.receivedBy']);
 
         // Faculty/outsiders only see their own requests. Admin/staff see all.
         if (in_array($user->role, ['faculty', 'outsider'], true)) {
@@ -43,7 +43,7 @@ class EquipmentRequestController extends Controller
     {
         $this->authorizeOwnerOrStaffAdmin($request, $equipmentRequest);
 
-        return new EquipmentRequestResource($equipmentRequest->load(['equipment', 'user', 'approver', 'transaction']));
+        return new EquipmentRequestResource($equipmentRequest->load(['equipment', 'user', 'approver', 'transaction.releasedBy', 'transaction.receivedBy']));
     }
 
     public function store(StoreEquipmentReservationRequest $request)
@@ -179,7 +179,7 @@ class EquipmentRequestController extends Controller
                 $equipment->name,
             )));
 
-        return new EquipmentRequestResource($equipmentRequest->fresh(['equipment']));
+        return new EquipmentRequestResource($equipmentRequest->fresh(['equipment', 'approver']));
     }
 
     public function decline(DeclineRequest $request, EquipmentRequest $equipmentRequest)
@@ -201,7 +201,7 @@ class EquipmentRequestController extends Controller
             'equipment', $equipmentRequest->id, 'declined', $data['decline_reason'], $equipmentRequest->equipment->name
         ));
 
-        return new EquipmentRequestResource($equipmentRequest->fresh());
+        return new EquipmentRequestResource($equipmentRequest->fresh(['approver']));
     }
 
     public function cancel(Request $request, EquipmentRequest $equipmentRequest)

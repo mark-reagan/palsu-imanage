@@ -8,7 +8,7 @@ class ReturnEquipmentRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->isStaff() === true;
+        return in_array($this->user()?->role, ['admin', 'staff'], true);
     }
 
     public function rules(): array

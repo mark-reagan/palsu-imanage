@@ -6,6 +6,8 @@ import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import Spinner from '../../components/ui/Spinner';
 import ErrorAlert from '../../components/ui/ErrorAlert';
+import SuccessAlert from '../../components/ui/SuccessAlert';
+import ConfirmActionModal from '../../components/ui/ConfirmActionModal';
 import Icon from '../../components/ui/Icon';
 import { useApiRequest } from '../../hooks/useApiRequest';
 import { useAuth } from '../auth/useAuth';
@@ -29,6 +31,8 @@ export default function SuppliesListPage() {
 	const [barcodeTarget, setBarcodeTarget] = useState(null);
 	const [scannerOpen, setScannerOpen] = useState(false);
 	const [actionError, setActionError] = useState(null);
+	const [successMessage, setSuccessMessage] = useState('');
+	const [confirmTarget, setConfirmTarget] = useState(null);
 
 	const { data, error, loading, refetch } = useApiRequest(
 		(signal) => suppliesApi.list({ page, search }, signal),
@@ -54,15 +58,8 @@ export default function SuppliesListPage() {
 
 	async function handleRemove(supply) {
 		if (isReadOnlyAdmin) return;
-		if (!confirm(`Permanently delete "${supply.name}"? This cannot be undone.`))
-			return;
 		setActionError(null);
-		try {
-			await suppliesApi.remove(supply.id);
-			refetch();
-		} catch (err) {
-			setActionError(err);
-		}
+		setConfirmTarget({ type: 'delete-supply', item: supply });
 	}
 
 	const columns = [
@@ -138,12 +135,9 @@ export default function SuppliesListPage() {
 							<button
 								className="btn-danger btn-sm"
 								disabled={isReadOnlyAdmin}
-								onClick={async () => {
-									if (confirm(`Deactivate "${r.name}"?`)) {
-										await suppliesApi.deactivate(r.id);
-										refetch();
-									}
-								}}
+								onClick={() =>
+									setConfirmTarget({ type: 'deactivate-supply', item: r })
+								}
 							>
 								Deactivate
 							</button>
@@ -194,6 +188,7 @@ export default function SuppliesListPage() {
 			</div>
 
 			<Card>
+				<SuccessAlert message={successMessage} className="mb-4" />
 				<div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end">
 					<Input
 						label="Search by name or supply code"
@@ -218,6 +213,7 @@ export default function SuppliesListPage() {
 
 				{loading && <Spinner />}
 				<ErrorAlert error={actionError} />
+				<SuccessAlert message={successMessage} className="mb-3" />
 				<ErrorAlert error={error} />
 				{!loading && !error && (
 					<>
@@ -235,7 +231,48 @@ export default function SuppliesListPage() {
 				open={formOpen}
 				onClose={() => setFormOpen(false)}
 				supply={editing}
-				onSaved={refetch}
+				onSaved={(saved) => {
+					refetch();
+					setSuccessMessage(
+						`${saved?.name || 'Supply'} ${editing ? 'updated' : 'added'} successfully.`,
+					);
+				}}
+			/>
+			<ConfirmActionModal
+				open={!!confirmTarget}
+				onClose={() => setConfirmTarget(null)}
+				title={
+					confirmTarget?.type === 'delete-supply'
+						? 'Delete Supply'
+						: 'Deactivate Supply'
+				}
+				message={
+					confirmTarget?.type === 'delete-supply'
+						? `Permanently delete ${confirmTarget?.item?.name}? This cannot be undone.`
+						: `Deactivate ${confirmTarget?.item?.name}?`
+				}
+				confirmLabel={
+					confirmTarget?.type === 'delete-supply'
+						? 'Delete supply'
+						: 'Deactivate'
+				}
+				variant="danger"
+				onConfirm={async () => {
+					try {
+						if (confirmTarget.type === 'delete-supply') {
+							await suppliesApi.remove(confirmTarget.item.id);
+							setSuccessMessage(`${confirmTarget.item.name} deleted.`);
+						} else {
+							await suppliesApi.deactivate(confirmTarget.item.id);
+							setSuccessMessage(`${confirmTarget.item.name} deactivated.`);
+						}
+						refetch();
+						setConfirmTarget(null);
+					} catch (err) {
+						setActionError(err);
+						throw err;
+					}
+				}}
 			/>
 			<NewSupplyRequestModal
 				open={requestDialogOpen}

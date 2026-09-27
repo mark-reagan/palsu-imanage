@@ -7,6 +7,8 @@ import Select from '../../components/ui/Select';
 import Spinner from '../../components/ui/Spinner';
 import ErrorAlert from '../../components/ui/ErrorAlert';
 import DeclineReasonModal from '../../components/ui/DeclineReasonModal';
+import ConfirmActionModal from '../../components/ui/ConfirmActionModal';
+import SuccessAlert from '../../components/ui/SuccessAlert';
 import { useApiRequest } from '../../hooks/useApiRequest';
 import { useAuth } from '../auth/useAuth';
 import { ROLES } from '../../lib/constants';
@@ -19,7 +21,10 @@ export default function SupplyRequestsPage() {
 	const [page, setPage] = useState(1);
 	const [status, setStatus] = useState('');
 	const [declineTarget, setDeclineTarget] = useState(null);
+	const [approveTarget, setApproveTarget] = useState(null);
+	const [cancelTarget, setCancelTarget] = useState(null);
 	const [actionError, setActionError] = useState(null);
+	const [successMessage, setSuccessMessage] = useState('');
 
 	const { data, error, loading, refetch } = useApiRequest(
 		(signal) => supplyRequestsApi.list({ page, status }, signal),
@@ -29,26 +34,9 @@ export default function SupplyRequestsPage() {
 	const isAdmin = user.role === ROLES.ADMIN;
 	const isFaculty = user.role === ROLES.FACULTY;
 
-	async function handleApprove(id) {
-		if (isReadOnlyAdmin) return;
-		setActionError(null);
-		try {
-			await supplyRequestsApi.approve(id);
-			refetch();
-		} catch (err) {
-			setActionError(err);
-		}
-	}
-
 	async function handleCancel(id) {
-		if (!confirm('Cancel this request?')) return;
 		setActionError(null);
-		try {
-			await supplyRequestsApi.cancel(id);
-			refetch();
-		} catch (err) {
-			setActionError(err);
-		}
+		setCancelTarget(data?.data?.find((request) => request.id === id) || { id });
 	}
 
 	const columns = [
@@ -63,6 +51,15 @@ export default function SupplyRequestsPage() {
 				]
 			: []),
 		{ key: 'quantity', header: 'Qty' },
+		...(isAdmin
+			? [
+					{
+						key: 'approver',
+						header: 'Reviewed By',
+						render: (r) => r.approver?.name || '—',
+					},
+				]
+			: []),
 		{
 			key: 'purpose',
 			header: 'Purpose',
@@ -95,7 +92,7 @@ export default function SupplyRequestsPage() {
 							<button
 								className="btn-primary btn-sm"
 								disabled={isReadOnlyAdmin}
-								onClick={() => handleApprove(r.id)}
+								onClick={() => setApproveTarget(r)}
 							>
 								Approve
 							</button>
@@ -151,6 +148,7 @@ export default function SupplyRequestsPage() {
 				</div>
 
 				<ErrorAlert error={actionError} className="mb-4" />
+				<SuccessAlert message={successMessage} className="mb-4" />
 				{loading && <Spinner />}
 				<ErrorAlert error={error} />
 				{!loading && !error && (
@@ -174,6 +172,34 @@ export default function SupplyRequestsPage() {
 					if (isReadOnlyAdmin) return;
 					await supplyRequestsApi.decline(declineTarget.id, reason);
 					refetch();
+					setSuccessMessage('Supply request declined.');
+				}}
+			/>
+			<ConfirmActionModal
+				open={!!approveTarget}
+				onClose={() => setApproveTarget(null)}
+				title="Approve Supply Request"
+				message={`Approve ${approveTarget?.quantity} ${approveTarget?.supply?.unit || 'unit(s)'} of ${approveTarget?.supply?.name} for ${approveTarget?.user?.name || 'the requester'}?`}
+				confirmLabel="Approve request"
+				onConfirm={async () => {
+					await supplyRequestsApi.approve(approveTarget.id);
+					refetch();
+					setSuccessMessage('Supply request approved.');
+					setApproveTarget(null);
+				}}
+			/>
+			<ConfirmActionModal
+				open={!!cancelTarget}
+				onClose={() => setCancelTarget(null)}
+				title="Cancel Supply Request"
+				message={`Cancel the request for ${cancelTarget?.supply?.name || 'this supply'}?`}
+				confirmLabel="Cancel request"
+				variant="danger"
+				onConfirm={async () => {
+					await supplyRequestsApi.cancel(cancelTarget.id);
+					refetch();
+					setSuccessMessage('Supply request cancelled.');
+					setCancelTarget(null);
 				}}
 			/>
 		</div>

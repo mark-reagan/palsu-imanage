@@ -17,7 +17,7 @@ class PublicRequestController extends Controller
 {
     public function show(Request $request, string $trackingToken)
     {
-        $equipmentRequest = EquipmentRequest::with(['equipment', 'transaction'])
+        $equipmentRequest = EquipmentRequest::with(['equipment', 'approver', 'transaction.releasedBy', 'transaction.receivedBy'])
             ->where('tracking_token', $trackingToken)
             ->first();
 
@@ -28,7 +28,7 @@ class PublicRequestController extends Controller
             ]);
         }
 
-        $supplyRequest = SupplyRequest::with(['supply', 'transaction'])
+        $supplyRequest = SupplyRequest::with(['supply', 'approver', 'transaction.releasedBy'])
             ->where('tracking_token', $trackingToken)
             ->first();
 

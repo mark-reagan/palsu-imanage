@@ -4,6 +4,8 @@ import Table from '../../components/ui/Table';
 import Pagination from '../../components/ui/Pagination';
 import Spinner from '../../components/ui/Spinner';
 import ErrorAlert from '../../components/ui/ErrorAlert';
+import SuccessAlert from '../../components/ui/SuccessAlert';
+import ConfirmActionModal from '../../components/ui/ConfirmActionModal';
 import { useApiRequest } from '../../hooks/useApiRequest';
 import { formatDate } from '../../lib/format';
 import { equipmentRequestsApi } from '../equipment-requests/api';
@@ -21,6 +23,8 @@ export default function ReleaseReturnPage() {
 	const [tab, setTab] = useState('release-equipment');
 	const [page, setPage] = useState(1);
 	const [actionError, setActionError] = useState(null);
+	const [successMessage, setSuccessMessage] = useState('');
+	const [confirmTarget, setConfirmTarget] = useState(null);
 	const [returnTarget, setReturnTarget] = useState(null);
 
 	const equipmentStatus = tab === 'release-equipment' ? 'approved' : 'released';
@@ -41,25 +45,32 @@ export default function ReleaseReturnPage() {
 		setTab(next);
 		setPage(1);
 		setActionError(null);
+		setSuccessMessage('');
 	}
 
 	async function handleReleaseEquipment(id) {
 		setActionError(null);
+		setSuccessMessage('');
 		try {
 			await releaseReturnApi.releaseEquipment(id);
 			equipmentRequests.refetch();
+			setSuccessMessage('Equipment released successfully.');
 		} catch (err) {
 			setActionError(err);
+			throw err;
 		}
 	}
 
 	async function handleReleaseSupply(id) {
 		setActionError(null);
+		setSuccessMessage('');
 		try {
 			await releaseReturnApi.releaseSupply(id);
 			supplyRequests.refetch();
+			setSuccessMessage('Supplies released successfully.');
 		} catch (err) {
 			setActionError(err);
+			throw err;
 		}
 	}
 
@@ -110,7 +121,7 @@ export default function ReleaseReturnPage() {
 			render: (r) => (
 				<button
 					className="btn-primary btn-sm"
-					onClick={() => handleReleaseEquipment(r.id)}
+					onClick={() => setConfirmTarget({ type: 'equipment', request: r })}
 				>
 					Release
 				</button>
@@ -171,7 +182,7 @@ export default function ReleaseReturnPage() {
 			render: (r) => (
 				<button
 					className="btn-primary btn-sm"
-					onClick={() => handleReleaseSupply(r.id)}
+					onClick={() => setConfirmTarget({ type: 'supply', request: r })}
 				>
 					Release
 				</button>
@@ -200,15 +211,17 @@ export default function ReleaseReturnPage() {
 				</p>
 			</div>
 
-			<div className="flex gap-1 rounded-lg bg-slate-100 p-1 sm:inline-flex">
+			<div className="flex w-full flex-col gap-1 rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-1.5 sm:w-auto sm:flex-row">
 				{TABS.map((t) => (
 					<button
 						key={t.key}
+						type="button"
+						aria-pressed={tab === t.key}
 						onClick={() => switchTab(t.key)}
-						className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+						className={`w-full rounded-xl px-4 py-2.5 text-left text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-strong)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-muted)] sm:w-auto sm:text-center ${
 							tab === t.key
-								? 'bg-white text-brand-700 shadow-sm'
-								: 'text-slate-500 hover:text-slate-700'
+								? 'bg-[var(--surface-strong)] text-[var(--accent-strong)] shadow-sm ring-1 ring-[var(--border)]'
+								: 'text-[var(--text-soft)] hover:bg-[var(--surface)] hover:text-[var(--text)]'
 						}`}
 					>
 						{t.label}
@@ -217,6 +230,7 @@ export default function ReleaseReturnPage() {
 			</div>
 
 			<Card>
+				<SuccessAlert message={successMessage} className="mb-4" />
 				<ErrorAlert error={actionError} className="mb-4" />
 				{activeRequest.loading && <Spinner />}
 				<ErrorAlert error={activeRequest.error} />
@@ -243,7 +257,29 @@ export default function ReleaseReturnPage() {
 				onClose={() => setReturnTarget(null)}
 				equipmentRequest={returnTarget?.request}
 				transactionId={returnTarget?.transactionId}
-				onSaved={() => equipmentRequests.refetch()}
+				onSaved={() => {
+					equipmentRequests.refetch();
+					setSuccessMessage('Equipment return recorded successfully.');
+				}}
+			/>
+			<ConfirmActionModal
+				open={!!confirmTarget}
+				onClose={() => setConfirmTarget(null)}
+				title={
+					confirmTarget?.type === 'supply'
+						? 'Confirm Supply Release'
+						: 'Confirm Equipment Release'
+				}
+				message={`Release ${confirmTarget?.request?.quantity} unit(s) of ${confirmTarget?.type === 'supply' ? confirmTarget?.request?.supply?.name : confirmTarget?.request?.equipment?.name} to ${confirmTarget?.request?.user?.name || 'the requester'}?`}
+				confirmLabel="Confirm release"
+				onConfirm={async () => {
+					if (confirmTarget.type === 'supply') {
+						await handleReleaseSupply(confirmTarget.request.id);
+					} else {
+						await handleReleaseEquipment(confirmTarget.request.id);
+					}
+					setConfirmTarget(null);
+				}}
 			/>
 		</div>
 	);

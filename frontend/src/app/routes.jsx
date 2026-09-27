@@ -86,9 +86,17 @@ export default function AppRoutes() {
 							<Route path="/supply-requests" element={<SupplyRequestsPage />} />
 						</Route>
 
-						<Route element={<ProtectedRoute roles={[ROLES.STAFF]} />}>
+						<Route
+							element={<ProtectedRoute roles={[ROLES.ADMIN, ROLES.STAFF]} />}
+						>
 							<Route path="/release-return" element={<ReleaseReturnPage />} />
+						</Route>
+						<Route
+							element={<ProtectedRoute roles={[ROLES.ADMIN, ROLES.STAFF]} />}
+						>
 							<Route path="/qr-scan" element={<QrScanPage />} />
+						</Route>
+						<Route element={<ProtectedRoute roles={[ROLES.STAFF]} />}>
 							<Route
 								path="/barcode-scan"
 								element={<Navigate to="/qr-scan" replace />}

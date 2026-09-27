@@ -179,6 +179,21 @@ function TransactionsTab() {
 			render: (r) => r.equipment_request?.user?.name || '—',
 		},
 		{
+			key: 'approved_by',
+			header: 'Approved By',
+			render: (r) => r.equipment_request?.approver?.name || '—',
+		},
+		{
+			key: 'released_by',
+			header: 'Released By',
+			render: (r) => r.released_by?.name || '—',
+		},
+		{
+			key: 'received_by',
+			header: 'Received By',
+			render: (r) => r.received_by?.name || '—',
+		},
+		{
 			key: 'status',
 			header: 'Status',
 			render: (r) => <Badge status={r.status} />,
@@ -206,7 +221,17 @@ function TransactionsTab() {
 			header: 'Requester',
 			render: (r) => r.supply_request?.user?.name || '—',
 		},
+		{
+			key: 'approved_by',
+			header: 'Approved By',
+			render: (r) => r.supply_request?.approver?.name || '—',
+		},
 		{ key: 'quantity_released', header: 'Qty' },
+		{
+			key: 'released_by',
+			header: 'Released By',
+			render: (r) => r.released_by?.name || '—',
+		},
 		{
 			key: 'released_at',
 			header: 'Released',

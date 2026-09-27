@@ -13,10 +13,11 @@ use App\Models\SupplyRequest;
 use App\Models\SupplyTransaction;
 use App\Notifications\ReleaseReturnNotification;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 /**
- * Staff-only: physical release and return of approved equipment/supply requests.
- * Staff cannot approve/decline requests -- they only execute admin-approved ones.
+ * Admin and staff execute physical release and return of approved requests.
+ * Approval and decline remain admin-only.
  */
 class ReleaseReturnController extends Controller
 {
@@ -28,21 +29,29 @@ class ReleaseReturnController extends Controller
 
         $data = $request->validated();
 
-        $transaction = EquipmentTransaction::create([
-            'equipment_request_id' => $equipmentRequest->id,
-            'released_by' => $request->user()->id,
-            'released_at' => now(),
-            'condition_on_release' => $data['condition_on_release'] ?? $equipmentRequest->equipment->condition,
-            'status' => 'released',
-        ]);
+        $transaction = DB::transaction(function () use ($request, $equipmentRequest, $data) {
+            $transaction = EquipmentTransaction::create([
+                'equipment_request_id' => $equipmentRequest->id,
+                'released_by' => $request->user()->id,
+                'released_at' => now(),
+                'condition_on_release' => $data['condition_on_release'] ?? $equipmentRequest->equipment->condition,
+                'status' => 'released',
+            ]);
 
-        $equipmentRequest->update(['status' => 'released']);
+            $equipmentRequest->update(['status' => 'released']);
+
+            return $transaction;
+        });
 
         $equipmentRequest->user->notify(new ReleaseReturnNotification(
             'equipment', $equipmentRequest->id, 'released', $equipmentRequest->equipment->name
         ));
 
-        return (new EquipmentTransactionResource($transaction->load('equipmentRequest.equipment')))->response()->setStatusCode(201);
+        return (new EquipmentTransactionResource($transaction->load([
+            'releasedBy',
+            'equipmentRequest.equipment',
+            'equipmentRequest.approver',
+        ])))->response()->setStatusCode(201);
     }
 
     public function returnEquipment(ReturnEquipmentRequest $request, EquipmentTransaction $equipmentTransaction)
@@ -56,30 +65,37 @@ class ReleaseReturnController extends Controller
         $equipmentRequest = $equipmentTransaction->equipmentRequest;
         $equipment = $equipmentRequest->equipment;
 
-        $equipmentTransaction->update([
-            'received_by' => $request->user()->id,
-            'returned_at' => now(),
-            'condition_on_return' => $data['condition_on_return'],
-            'remarks' => $data['remarks'] ?? null,
-            'status' => 'returned',
-        ]);
+        DB::transaction(function () use ($request, $equipmentTransaction, $equipmentRequest, $equipment, $data) {
+            $equipmentTransaction->update([
+                'received_by' => $request->user()->id,
+                'returned_at' => now(),
+                'condition_on_return' => $data['condition_on_return'],
+                'remarks' => $data['remarks'] ?? null,
+                'status' => 'returned',
+            ]);
 
-        $equipmentRequest->update(['status' => 'completed']);
+            $equipmentRequest->update(['status' => 'completed']);
 
-        // Returned equipment is requestable again unless it is damaged.
-        if ($data['condition_on_return'] !== 'damaged') {
-            $equipment->increment('available_quantity', $equipmentRequest->quantity);
-        }
+            // Returned equipment is requestable again unless it is damaged.
+            if ($data['condition_on_return'] !== 'damaged') {
+                $equipment->increment('available_quantity', $equipmentRequest->quantity);
+            }
 
-        $equipment->condition = $data['condition_on_return'];
-        $equipment->save();
-        $equipment->refreshStatus();
+            $equipment->condition = $data['condition_on_return'];
+            $equipment->save();
+            $equipment->refreshStatus();
+        });
 
         $equipmentRequest->user->notify(new ReleaseReturnNotification(
             'equipment', $equipmentRequest->id, 'returned', $equipment->name
         ));
 
-        return new EquipmentTransactionResource($equipmentTransaction->fresh(['equipmentRequest.equipment']));
+        return new EquipmentTransactionResource($equipmentTransaction->fresh([
+            'releasedBy',
+            'receivedBy',
+            'equipmentRequest.equipment',
+            'equipmentRequest.approver',
+        ]));
     }
 
     public function releaseSupply(Request $request, SupplyRequest $supplyRequest)
@@ -93,22 +109,29 @@ class ReleaseReturnController extends Controller
             return response()->json(['message' => 'Insufficient stock to release this request.'], 422);
         }
 
-        $transaction = SupplyTransaction::create([
-            'supply_request_id' => $supplyRequest->id,
-            'released_by' => $request->user()->id,
-            'quantity_released' => $supplyRequest->quantity,
-            'released_at' => now(),
-        ]);
+        [$transaction] = DB::transaction(function () use ($request, $supplyRequest, $supply) {
+            $transaction = SupplyTransaction::create([
+                'supply_request_id' => $supplyRequest->id,
+                'released_by' => $request->user()->id,
+                'quantity_released' => $supplyRequest->quantity,
+                'released_at' => now(),
+            ]);
 
-        // Automatic supply stock deduction.
-        $supply->decrement('stock_quantity', $supplyRequest->quantity);
+            // Automatic supply stock deduction.
+            $supply->decrement('stock_quantity', $supplyRequest->quantity);
+            $supplyRequest->update(['status' => 'completed']);
 
-        $supplyRequest->update(['status' => 'completed']);
+            return [$transaction];
+        });
 
         $supplyRequest->user->notify(new ReleaseReturnNotification(
             'supply', $supplyRequest->id, 'released', $supply->name
         ));
 
-        return (new SupplyTransactionResource($transaction->load('supplyRequest.supply')))->response()->setStatusCode(201);
+        return (new SupplyTransactionResource($transaction->load([
+            'releasedBy',
+            'supplyRequest.supply',
+            'supplyRequest.approver',
+        ])))->response()->setStatusCode(201);
     }
 }

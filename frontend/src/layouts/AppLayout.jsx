@@ -4,6 +4,8 @@ import { useAuth } from '../features/auth/useAuth';
 import NotificationBell from '../features/notifications/NotificationBell';
 import Icon from '../components/ui/Icon';
 import ErrorBoundary from '../components/ui/ErrorBoundary';
+import ConfirmActionModal from '../components/ui/ConfirmActionModal';
+import SuccessAlert from '../components/ui/SuccessAlert';
 import { NAV_ITEMS } from './navConfig';
 import { useOfflineMode } from '../hooks/useOfflineMode';
 import { useTheme } from '../app/useTheme';
@@ -46,6 +48,8 @@ export default function AppLayout() {
 	const location = useLocation();
 	const { theme, toggleTheme } = useTheme();
 	const [mobileOpen, setMobileOpen] = useState(false);
+	const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
+	const [successMessage, setSuccessMessage] = useState('');
 
 	useEffect(() => {
 		if (!mobileOpen) return undefined;
@@ -63,8 +67,18 @@ export default function AppLayout() {
 		};
 	}, [mobileOpen]);
 
+	useEffect(() => {
+		function handleSuccess(event) {
+			setSuccessMessage(event.detail?.message || 'Changes saved successfully.');
+		}
+
+		window.addEventListener('app-success', handleSuccess);
+		return () => window.removeEventListener('app-success', handleSuccess);
+	}, []);
+
 	async function handleLogout() {
 		await logout();
+		setLogoutConfirmOpen(false);
 		navigate('/login', { replace: true });
 	}
 
@@ -195,7 +209,7 @@ export default function AppLayout() {
 							<span className="hidden sm:inline">{user.name}</span>
 						</NavLink>
 						<button
-							onClick={handleLogout}
+							onClick={() => setLogoutConfirmOpen(true)}
 							className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium text-[var(--text-soft)] hover:bg-[var(--surface-muted)] hover:text-[var(--text)]"
 						>
 							<Icon name="logout" className="h-4 w-4" />
@@ -205,11 +219,21 @@ export default function AppLayout() {
 				</header>
 
 				<main className="px-4 py-6 sm:px-6 lg:px-8">
+					<SuccessAlert message={successMessage} className="mb-4" />
 					<ErrorBoundary key={location.pathname}>
 						<Outlet />
 					</ErrorBoundary>
 				</main>
 			</div>
+			<ConfirmActionModal
+				open={logoutConfirmOpen}
+				onClose={() => setLogoutConfirmOpen(false)}
+				title="Confirm Logout"
+				message="Are you sure you want to sign out of PalSU-iManage?"
+				confirmLabel="Log out"
+				variant="danger"
+				onConfirm={handleLogout}
+			/>
 		</div>
 	);
 }

@@ -67,12 +67,12 @@ Modernize the application UI and UX while keeping the existing role-based invent
 
 ## Phase 7: Approval, Release, and Return Flow
 
-- [ ] Add confirmation dialogs before approval, decline, release, return, edit, add, and logout actions
-- [ ] Add visual confirmation feedback after successful actions
-- [ ] Show who approved a request in request details and transaction reporting
-- [ ] Show who released the item in request details and transaction reporting
-- [ ] Add the release and return feature for admin users as well as staff users when appropriate
-- [ ] Ensure role access stays aligned with business rules
+- [x] Add confirmation dialogs before approval, decline, release, return, edit, add, and logout actions
+- [x] Add visual confirmation feedback after successful actions
+- [x] Show who approved a request in request details and transaction reporting
+- [x] Show who released the item in request details and transaction reporting
+- [x] Add the release and return feature for admin users as well as staff users when appropriate
+- [x] Ensure role access stays aligned with business rules
 
 ## Phase 8: Reports and Request Details
 

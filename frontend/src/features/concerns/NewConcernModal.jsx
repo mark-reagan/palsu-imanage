@@ -4,6 +4,7 @@ import Select from '../../components/ui/Select';
 import Textarea from '../../components/ui/Textarea';
 import Button from '../../components/ui/Button';
 import ErrorAlert from '../../components/ui/ErrorAlert';
+import ConfirmActionModal from '../../components/ui/ConfirmActionModal';
 import { useApiRequest } from '../../hooks/useApiRequest';
 import { CONCERN_SEVERITIES } from '../../lib/constants';
 import { equipmentApi } from '../equipment/api';
@@ -19,74 +20,93 @@ export default function NewConcernModal(props) {
 function NewConcernModalContent({ onClose, onSaved }) {
 	const [form, setForm] = useState(EMPTY);
 	const [error, setError] = useState(null);
-	const [loading, setLoading] = useState(false);
+	const [confirming, setConfirming] = useState(false);
 
 	const { data: equipmentList } = useApiRequest(
 		(signal) => equipmentApi.list({ per_page: 100 }, signal),
 		[],
 	);
 
-	async function handleSubmit(e) {
+	function handleSubmit(e) {
 		e.preventDefault();
+		setConfirming(true);
+	}
+
+	async function confirmSubmit() {
 		setError(null);
-		setLoading(true);
 		try {
 			await concernsApi.create(form);
 			onSaved?.();
+			window.dispatchEvent(
+				new CustomEvent('app-success', {
+					detail: { message: 'Concern report submitted successfully.' },
+				}),
+			);
 			onClose();
 		} catch (err) {
 			setError(err);
-		} finally {
-			setLoading(false);
+			throw err;
 		}
 	}
 
 	return (
-		<Modal open onClose={onClose} title="Report Equipment Concern">
-			<form onSubmit={handleSubmit} className="space-y-4">
-				<Select
-					label="Equipment"
-					required
-					value={form.equipment_id}
-					onChange={(e) => setForm({ ...form, equipment_id: e.target.value })}
-				>
-					<option value="">Select equipment…</option>
-					{equipmentList?.data?.map((eq) => (
-						<option key={eq.id} value={eq.id}>
-							{eq.name} ({eq.asset_code})
-						</option>
-					))}
-				</Select>
-				<Select
-					label="Severity"
-					value={form.severity}
-					onChange={(e) => setForm({ ...form, severity: e.target.value })}
-				>
-					{CONCERN_SEVERITIES.map((s) => (
-						<option key={s} value={s}>
-							{s}
-						</option>
-					))}
-				</Select>
-				<Textarea
-					label="Description"
-					required
-					placeholder="Describe the damage or concern…"
-					value={form.description}
-					onChange={(e) => setForm({ ...form, description: e.target.value })}
-				/>
+		<>
+			<Modal
+				open={!confirming}
+				onClose={onClose}
+				title="Report Equipment Concern"
+			>
+				<form onSubmit={handleSubmit} className="space-y-4">
+					<Select
+						label="Equipment"
+						required
+						value={form.equipment_id}
+						onChange={(e) => setForm({ ...form, equipment_id: e.target.value })}
+					>
+						<option value="">Select equipment…</option>
+						{equipmentList?.data?.map((eq) => (
+							<option key={eq.id} value={eq.id}>
+								{eq.name} ({eq.asset_code})
+							</option>
+						))}
+					</Select>
+					<Select
+						label="Severity"
+						value={form.severity}
+						onChange={(e) => setForm({ ...form, severity: e.target.value })}
+					>
+						{CONCERN_SEVERITIES.map((s) => (
+							<option key={s} value={s}>
+								{s}
+							</option>
+						))}
+					</Select>
+					<Textarea
+						label="Description"
+						required
+						placeholder="Describe the damage or concern…"
+						value={form.description}
+						onChange={(e) => setForm({ ...form, description: e.target.value })}
+					/>
 
-				<ErrorAlert error={error} />
+					<ErrorAlert error={error} />
 
-				<div className="flex justify-end gap-2 pt-2">
-					<Button type="button" variant="secondary" onClick={onClose}>
-						Cancel
-					</Button>
-					<Button type="submit" loading={loading}>
-						Submit report
-					</Button>
-				</div>
-			</form>
-		</Modal>
+					<div className="flex justify-end gap-2 pt-2">
+						<Button type="button" variant="secondary" onClick={onClose}>
+							Cancel
+						</Button>
+						<Button type="submit">Review report</Button>
+					</div>
+				</form>
+			</Modal>
+			<ConfirmActionModal
+				open={confirming}
+				onClose={() => setConfirming(false)}
+				title="Confirm Concern Report"
+				message={`Submit a ${form.severity} concern for ${equipmentList?.data?.find((item) => String(item.id) === String(form.equipment_id))?.name || 'the selected equipment'}?`}
+				confirmLabel="Submit report"
+				onConfirm={confirmSubmit}
+			/>
+		</>
 	);
 }

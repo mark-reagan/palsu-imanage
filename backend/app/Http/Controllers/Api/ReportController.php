@@ -54,7 +54,7 @@ class ReportController extends Controller
 
     public function supplyUsageReport(Request $request)
     {
-        $query = SupplyTransaction::with(['supplyRequest.supply', 'supplyRequest.user', 'releasedBy']);
+        $query = SupplyTransaction::with(['supplyRequest.supply', 'supplyRequest.user', 'supplyRequest.approver', 'releasedBy']);
 
         if ($request->filled('from')) {
             $query->whereDate('released_at', '>=', $request->date('from'));
@@ -68,10 +68,10 @@ class ReportController extends Controller
 
     public function transactionReport(Request $request)
     {
-        $equipmentTx = EquipmentTransaction::with(['equipmentRequest.equipment', 'equipmentRequest.user'])
+        $equipmentTx = EquipmentTransaction::with(['equipmentRequest.equipment', 'equipmentRequest.user', 'equipmentRequest.approver', 'releasedBy', 'receivedBy'])
             ->orderByDesc('id')->limit(50)->get();
 
-        $supplyTx = SupplyTransaction::with(['supplyRequest.supply', 'supplyRequest.user', 'releasedBy'])
+        $supplyTx = SupplyTransaction::with(['supplyRequest.supply', 'supplyRequest.user', 'supplyRequest.approver', 'releasedBy'])
             ->orderByDesc('id')->limit(50)->get();
 
         return response()->json([

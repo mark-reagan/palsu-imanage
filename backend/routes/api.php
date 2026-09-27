@@ -112,14 +112,16 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
 
     /*
     |----------------------------------------------------------------------
-    | Staff-only: physical release / return / QR scanning
+    | Physical release / return and staff QR scanning
     |----------------------------------------------------------------------
     */
-    Route::middleware('role:staff')->group(function () {
+    Route::middleware('role:admin,staff')->group(function () {
         Route::post('/equipment-requests/{equipmentRequest}/release', [ReleaseReturnController::class, 'releaseEquipment']);
         Route::post('/equipment-transactions/{equipmentTransaction}/return', [ReleaseReturnController::class, 'returnEquipment']);
         Route::post('/supply-requests/{supplyRequest}/release', [ReleaseReturnController::class, 'releaseSupply']);
+    });
 
+    Route::middleware('role:staff')->group(function () {
         Route::post('/barcode/scan', [BarcodeController::class, 'scan']);
     });
 

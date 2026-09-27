@@ -9,6 +9,12 @@ class EquipmentRequestResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
+        $viewer = $request->user();
+        $canViewActors = $viewer && (
+            in_array($viewer->role, ['admin', 'staff'], true)
+            || $viewer->id === $this->user_id
+        );
+
         return [
             'id' => $this->id,
             'tracking_token' => $this->tracking_token,
@@ -23,8 +29,26 @@ class EquipmentRequestResource extends JsonResource
             'approved_at' => $this->approved_at,
             'equipment' => new EquipmentResource($this->whenLoaded('equipment')),
             'user' => new UserResource($this->whenLoaded('user')),
-            'approver' => new UserResource($this->whenLoaded('approver')),
-            'transaction' => $this->whenLoaded('transaction'),
+            'approver' => $canViewActors
+                ? new UserResource($this->whenLoaded('approver'))
+                : null,
+            'transaction' => $this->whenLoaded('transaction', function () use ($canViewActors) {
+                if (! $this->transaction) {
+                    return null;
+                }
+
+                return [
+                    'id' => $this->transaction->id,
+                    'released_at' => $this->transaction->released_at,
+                    'returned_at' => $this->transaction->returned_at,
+                    'released_by' => $canViewActors && $this->transaction->relationLoaded('releasedBy')
+                            ? new UserResource($this->transaction->releasedBy)
+                            : null,
+                    'received_by' => $canViewActors && $this->transaction->relationLoaded('receivedBy')
+                            ? new UserResource($this->transaction->receivedBy)
+                            : null,
+                ];
+            }),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

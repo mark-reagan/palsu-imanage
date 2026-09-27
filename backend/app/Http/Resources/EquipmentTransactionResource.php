@@ -22,6 +22,8 @@ class EquipmentTransactionResource extends JsonResource
                 : null,
             'released_at' => $this->released_at,
             'returned_at' => $this->returned_at,
+            'released_by' => new UserResource($this->whenLoaded('releasedBy')),
+            'received_by' => new UserResource($this->whenLoaded('receivedBy')),
             'condition_on_release' => $this->condition_on_release,
             'condition_on_return' => $this->condition_on_return,
             'remarks' => $this->remarks,

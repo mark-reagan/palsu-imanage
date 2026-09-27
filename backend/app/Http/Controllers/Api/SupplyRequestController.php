@@ -23,7 +23,7 @@ class SupplyRequestController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        $query = SupplyRequest::with(['supply', 'user', 'approver']);
+        $query = SupplyRequest::with(['supply', 'user', 'approver', 'transaction.releasedBy']);
 
         if (! in_array($user->role, ['admin', 'staff'], true)) {
             $query->where('user_id', $user->id);
@@ -43,7 +43,7 @@ class SupplyRequestController extends Controller
             abort(403, 'You may only view your own requests.');
         }
 
-        return new SupplyRequestResource($supplyRequest->load(['supply', 'user', 'approver', 'transaction']));
+        return new SupplyRequestResource($supplyRequest->load(['supply', 'user', 'approver', 'transaction.releasedBy']));
     }
 
     public function store(StoreSupplyRequestRequest $request)
@@ -170,7 +170,7 @@ class SupplyRequestController extends Controller
                 $supplyRequest->supply->name,
             )));
 
-        return new SupplyRequestResource($supplyRequest->fresh(['supply']));
+        return new SupplyRequestResource($supplyRequest->fresh(['supply', 'approver']));
     }
 
     public function decline(DeclineRequest $request, SupplyRequest $supplyRequest)
@@ -192,7 +192,7 @@ class SupplyRequestController extends Controller
             'supply', $supplyRequest->id, 'declined', $data['decline_reason'], $supplyRequest->supply->name
         ));
 
-        return new SupplyRequestResource($supplyRequest->fresh());
+        return new SupplyRequestResource($supplyRequest->fresh(['approver']));
     }
 
     public function cancel(Request $request, SupplyRequest $supplyRequest)

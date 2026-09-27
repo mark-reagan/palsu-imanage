@@ -34,13 +34,13 @@ export const NAV_ITEMS = [
 	{
 		to: '/release-return',
 		label: 'Release & Return',
-		roles: [ROLES.STAFF],
+		roles: [ROLES.ADMIN, ROLES.STAFF],
 		icon: 'exchange',
 	},
 	{
 		to: '/qr-scan',
 		label: 'QR Scan',
-		roles: [ROLES.STAFF],
+		roles: [ROLES.ADMIN, ROLES.STAFF],
 		icon: 'camera',
 	},
 	{

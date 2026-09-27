@@ -3,6 +3,8 @@ import Card from '../../components/ui/Card';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
 import ErrorAlert from '../../components/ui/ErrorAlert';
+import ConfirmActionModal from '../../components/ui/ConfirmActionModal';
+import SuccessAlert from '../../components/ui/SuccessAlert';
 import Badge from '../../components/ui/Badge';
 import { useAuth } from '../auth/useAuth';
 import { authApi } from '../auth/api';
@@ -20,19 +22,22 @@ export default function ProfilePage() {
 	});
 	const [error, setError] = useState(null);
 	const [success, setSuccess] = useState(false);
-	const [loading, setLoading] = useState(false);
+	const [confirmOpen, setConfirmOpen] = useState(false);
 
 	function update(field, value) {
 		setForm((f) => ({ ...f, [field]: value }));
 		setSuccess(false);
 	}
 
-	async function handleSubmit(e) {
+	function handleSubmit(e) {
 		e.preventDefault();
+		setConfirmOpen(true);
+	}
+
+	async function confirmSave() {
 		if (isReadOnlyAdmin) return;
 		setError(null);
 		setSuccess(false);
-		setLoading(true);
 		try {
 			const payload = {
 				name: form.name,
@@ -47,10 +52,14 @@ export default function ProfilePage() {
 			await refreshUser();
 			setForm((f) => ({ ...f, password: '', password_confirmation: '' }));
 			setSuccess(true);
+			window.dispatchEvent(
+				new CustomEvent('app-success', {
+					detail: { message: 'Profile updated successfully.' },
+				}),
+			);
 		} catch (err) {
 			setError(err);
-		} finally {
-			setLoading(false);
+			throw err;
 		}
 	}
 
@@ -110,17 +119,24 @@ export default function ProfilePage() {
 					/>
 
 					<ErrorAlert error={error} />
-					{success && (
-						<div className="rounded-lg bg-green-50 p-3 text-sm text-green-700 ring-1 ring-inset ring-green-200">
-							Profile updated successfully.
-						</div>
-					)}
+					{success && <SuccessAlert message="Profile updated successfully." />}
 
-					<Button type="submit" loading={loading} disabled={isReadOnlyAdmin}>
-						Save changes
+					<Button type="submit" disabled={isReadOnlyAdmin}>
+						Review changes
 					</Button>
 				</form>
 			</Card>
+			<ConfirmActionModal
+				open={confirmOpen}
+				onClose={() => setConfirmOpen(false)}
+				title="Confirm Profile Changes"
+				message="Save the profile details and any password change you entered?"
+				confirmLabel="Save changes"
+				onConfirm={async () => {
+					await confirmSave();
+					setConfirmOpen(false);
+				}}
+			/>
 		</div>
 	);
 }

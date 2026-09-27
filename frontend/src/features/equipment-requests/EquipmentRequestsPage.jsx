@@ -7,6 +7,8 @@ import Select from '../../components/ui/Select';
 import Spinner from '../../components/ui/Spinner';
 import ErrorAlert from '../../components/ui/ErrorAlert';
 import DeclineReasonModal from '../../components/ui/DeclineReasonModal';
+import ConfirmActionModal from '../../components/ui/ConfirmActionModal';
+import SuccessAlert from '../../components/ui/SuccessAlert';
 import { useApiRequest } from '../../hooks/useApiRequest';
 import { useAuth } from '../auth/useAuth';
 import { ROLES } from '../../lib/constants';
@@ -20,7 +22,10 @@ export default function EquipmentRequestsPage() {
 	const [page, setPage] = useState(1);
 	const [status, setStatus] = useState('');
 	const [declineTarget, setDeclineTarget] = useState(null);
+	const [approveTarget, setApproveTarget] = useState(null);
+	const [cancelTarget, setCancelTarget] = useState(null);
 	const [actionError, setActionError] = useState(null);
+	const [successMessage, setSuccessMessage] = useState('');
 
 	const { data, error, loading, refetch } = useApiRequest(
 		(signal) => equipmentRequestsApi.list({ page, status }, signal),
@@ -31,26 +36,9 @@ export default function EquipmentRequestsPage() {
 	const isOwnerRole =
 		user.role === ROLES.FACULTY || user.role === ROLES.OUTSIDER;
 
-	async function handleApprove(id) {
-		if (isReadOnlyAdmin) return;
-		setActionError(null);
-		try {
-			await equipmentRequestsApi.approve(id);
-			refetch();
-		} catch (err) {
-			setActionError(err);
-		}
-	}
-
 	async function handleCancel(id) {
-		if (!confirm('Cancel this request?')) return;
 		setActionError(null);
-		try {
-			await equipmentRequestsApi.cancel(id);
-			refetch();
-		} catch (err) {
-			setActionError(err);
-		}
+		setCancelTarget(data?.data?.find((request) => request.id === id) || { id });
 	}
 
 	const columns = [
@@ -69,6 +57,15 @@ export default function EquipmentRequestsPage() {
 				]
 			: []),
 		{ key: 'quantity', header: 'Qty' },
+		...(isAdmin
+			? [
+					{
+						key: 'approver',
+						header: 'Reviewed By',
+						render: (r) => r.approver?.name || '—',
+					},
+				]
+			: []),
 		{
 			key: 'purpose',
 			header: 'Purpose',
@@ -108,7 +105,7 @@ export default function EquipmentRequestsPage() {
 							<button
 								className="btn-primary btn-sm"
 								disabled={isReadOnlyAdmin}
-								onClick={() => handleApprove(r.id)}
+								onClick={() => setApproveTarget(r)}
 							>
 								Approve
 							</button>
@@ -165,6 +162,7 @@ export default function EquipmentRequestsPage() {
 				</div>
 
 				<ErrorAlert error={actionError} className="mb-4" />
+				<SuccessAlert message={successMessage} className="mb-4" />
 				{loading && <Spinner />}
 				<ErrorAlert error={error} />
 				{!loading && !error && (
@@ -188,6 +186,34 @@ export default function EquipmentRequestsPage() {
 					if (isReadOnlyAdmin) return;
 					await equipmentRequestsApi.decline(declineTarget.id, reason);
 					refetch();
+					setSuccessMessage('Equipment request declined.');
+				}}
+			/>
+			<ConfirmActionModal
+				open={!!approveTarget}
+				onClose={() => setApproveTarget(null)}
+				title="Approve Equipment Request"
+				message={`Approve ${approveTarget?.quantity} unit(s) of ${approveTarget?.equipment?.name} for ${approveTarget?.user?.name || 'the requester'}?`}
+				confirmLabel="Approve request"
+				onConfirm={async () => {
+					await equipmentRequestsApi.approve(approveTarget.id);
+					refetch();
+					setSuccessMessage('Equipment request approved.');
+					setApproveTarget(null);
+				}}
+			/>
+			<ConfirmActionModal
+				open={!!cancelTarget}
+				onClose={() => setCancelTarget(null)}
+				title="Cancel Equipment Request"
+				message={`Cancel the request for ${cancelTarget?.equipment?.name || 'this equipment'}?`}
+				confirmLabel="Cancel request"
+				variant="danger"
+				onConfirm={async () => {
+					await equipmentRequestsApi.cancel(cancelTarget.id);
+					refetch();
+					setSuccessMessage('Equipment request cancelled.');
+					setCancelTarget(null);
 				}}
 			/>
 		</div>

@@ -7,6 +7,7 @@ import Select from '../../components/ui/Select';
 import Button from '../../components/ui/Button';
 import Spinner from '../../components/ui/Spinner';
 import ErrorAlert from '../../components/ui/ErrorAlert';
+import SuccessAlert from '../../components/ui/SuccessAlert';
 import Icon from '../../components/ui/Icon';
 import { useApiRequest } from '../../hooks/useApiRequest';
 import { useAuth } from '../auth/useAuth';
@@ -24,6 +25,7 @@ export default function ConcernsPage() {
 	const [status, setStatus] = useState('');
 	const [newOpen, setNewOpen] = useState(false);
 	const [reviewTarget, setReviewTarget] = useState(null);
+	const [successMessage, setSuccessMessage] = useState('');
 
 	const { data, error, loading, refetch } = useApiRequest(
 		(signal) => concernsApi.list({ page, status }, signal),
@@ -107,6 +109,7 @@ export default function ConcernsPage() {
 			</div>
 
 			<Card>
+				<SuccessAlert message={successMessage} className="mb-4" />
 				<div className="mb-4 max-w-xs">
 					<Select
 						value={status}
@@ -139,13 +142,19 @@ export default function ConcernsPage() {
 			<NewConcernModal
 				open={newOpen}
 				onClose={() => setNewOpen(false)}
-				onSaved={refetch}
+				onSaved={() => {
+					refetch();
+					setSuccessMessage('Concern report submitted successfully.');
+				}}
 			/>
 			<ReviewConcernModal
 				open={!!reviewTarget}
 				onClose={() => setReviewTarget(null)}
 				concern={reviewTarget}
-				onSaved={refetch}
+				onSaved={() => {
+					refetch();
+					setSuccessMessage('Concern review saved successfully.');
+				}}
 				disabled={isReadOnlyAdmin}
 			/>
 		</div>

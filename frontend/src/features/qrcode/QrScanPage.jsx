@@ -100,11 +100,11 @@ export default function QrScanPage() {
 						playsInline
 					/>
 				</div>
-				<p className="mt-3 text-xs text-slate-500">
+				<p className="my-2 text-xs text-slate-500">
 					Allow camera access to scan the QR code on the request confirmation.
 				</p>
 				<ErrorAlert error={cameraError ? new Error(cameraError) : null} />
-				<form onSubmit={handleScan} className="flex gap-2">
+				<form onSubmit={handleScan} className="mt-2 flex gap-2">
 					<div className="flex-1">
 						<Input
 							placeholder="Paste request status link"

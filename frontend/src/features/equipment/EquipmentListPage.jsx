@@ -8,6 +8,8 @@ import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
 import Spinner from '../../components/ui/Spinner';
 import ErrorAlert from '../../components/ui/ErrorAlert';
+import SuccessAlert from '../../components/ui/SuccessAlert';
+import ConfirmActionModal from '../../components/ui/ConfirmActionModal';
 import Icon from '../../components/ui/Icon';
 import { useApiRequest } from '../../hooks/useApiRequest';
 import { useAuth } from '../auth/useAuth';
@@ -32,6 +34,8 @@ export default function EquipmentListPage() {
 	const [requestDialogOpen, setRequestDialogOpen] = useState(false);
 	const [requestItems, setRequestItems] = useState([]);
 	const [actionError, setActionError] = useState(null);
+	const [successMessage, setSuccessMessage] = useState('');
+	const [confirmTarget, setConfirmTarget] = useState(null);
 
 	const { data, error, loading, refetch } = useApiRequest(
 		(signal) => equipmentApi.list({ page, search, status }, signal),
@@ -58,17 +62,8 @@ export default function EquipmentListPage() {
 
 	async function handleRemove(equipment) {
 		if (isReadOnlyAdmin) return;
-		if (
-			!confirm(`Permanently delete "${equipment.name}"? This cannot be undone.`)
-		)
-			return;
 		setActionError(null);
-		try {
-			await equipmentApi.remove(equipment.id);
-			refetch();
-		} catch (err) {
-			setActionError(err);
-		}
+		setConfirmTarget({ type: 'delete-equipment', item: equipment });
 	}
 
 	const columns = [
@@ -142,12 +137,9 @@ export default function EquipmentListPage() {
 							<button
 								className="btn-danger btn-sm"
 								disabled={isReadOnlyAdmin}
-								onClick={async () => {
-									if (confirm(`Deactivate "${r.name}"?`)) {
-										await equipmentApi.deactivate(r.id);
-										refetch();
-									}
-								}}
+								onClick={() =>
+									setConfirmTarget({ type: 'deactivate-equipment', item: r })
+								}
 							>
 								Deactivate
 							</button>
@@ -200,6 +192,7 @@ export default function EquipmentListPage() {
 			</div>
 
 			<Card>
+				<SuccessAlert message={successMessage} className="mb-4" />
 				<div className="mb-4 grid grid-cols-1 items-end gap-3 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)]">
 					<Input
 						className="h-9"
@@ -239,6 +232,7 @@ export default function EquipmentListPage() {
 				</div>
 
 				{loading && <Spinner />}
+				<SuccessAlert message={successMessage} className="mb-3" />
 				<ErrorAlert error={actionError} />
 				<ErrorAlert error={error} />
 				{!loading && !error && (
@@ -257,7 +251,48 @@ export default function EquipmentListPage() {
 				open={formOpen}
 				onClose={() => setFormOpen(false)}
 				equipment={editing}
-				onSaved={refetch}
+				onSaved={(saved) => {
+					refetch();
+					setSuccessMessage(
+						`${saved?.name || 'Equipment'} ${editing ? 'updated' : 'added'} successfully.`,
+					);
+				}}
+			/>
+			<ConfirmActionModal
+				open={!!confirmTarget}
+				onClose={() => setConfirmTarget(null)}
+				title={
+					confirmTarget?.type === 'delete-equipment'
+						? 'Delete Equipment'
+						: 'Deactivate Equipment'
+				}
+				message={
+					confirmTarget?.type === 'delete-equipment'
+						? `Permanently delete ${confirmTarget?.item?.name}? This cannot be undone.`
+						: `Deactivate ${confirmTarget?.item?.name}?`
+				}
+				confirmLabel={
+					confirmTarget?.type === 'delete-equipment'
+						? 'Delete equipment'
+						: 'Deactivate'
+				}
+				variant="danger"
+				onConfirm={async () => {
+					try {
+						if (confirmTarget.type === 'delete-equipment') {
+							await equipmentApi.remove(confirmTarget.item.id);
+							setSuccessMessage(`${confirmTarget.item.name} deleted.`);
+						} else {
+							await equipmentApi.deactivate(confirmTarget.item.id);
+							setSuccessMessage(`${confirmTarget.item.name} deactivated.`);
+						}
+						refetch();
+						setConfirmTarget(null);
+					} catch (err) {
+						setActionError(err);
+						throw err;
+					}
+				}}
 			/>
 			{barcodeTarget && (
 				<EquipmentBarcodeModal

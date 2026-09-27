@@ -5,6 +5,8 @@ import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
 import DeclineReasonModal from '../../components/ui/DeclineReasonModal';
 import ErrorAlert from '../../components/ui/ErrorAlert';
+import SuccessAlert from '../../components/ui/SuccessAlert';
+import ConfirmActionModal from '../../components/ui/ConfirmActionModal';
 import ReturnEquipmentModal from '../release-return/ReturnEquipmentModal';
 import { useAuth } from '../auth/useAuth';
 import { ROLES } from '../../lib/constants';
@@ -22,6 +24,8 @@ export default function PublicRequestStatusPage() {
 	const { user } = useAuth();
 	const { isReadOnlyAdmin } = useOfflineMode();
 	const [actionError, setActionError] = useState(null);
+	const [successMessage, setSuccessMessage] = useState('');
+	const [confirmAction, setConfirmAction] = useState(null);
 	const [declineOpen, setDeclineOpen] = useState(false);
 	const [returnOpen, setReturnOpen] = useState(false);
 	const [downloading, setDownloading] = useState(false);
@@ -91,12 +95,14 @@ export default function PublicRequestStatusPage() {
 	async function refreshAfterAction(action) {
 		if (isReadOnlyAdmin) return;
 		setActionError(null);
+		setSuccessMessage('');
 		try {
 			await action();
-			refetch();
+			await refetch();
 			setDeclineOpen(false);
 		} catch (requestError) {
 			setActionError(requestError);
+			throw requestError;
 		}
 	}
 
@@ -184,6 +190,28 @@ export default function PublicRequestStatusPage() {
 								</dd>
 							</div>
 						)}
+						{request.approver?.name && (
+							<div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4">
+								<dt className="text-xs font-medium uppercase tracking-wide text-[var(--text-soft)]">
+									{request.status === 'declined'
+										? 'Reviewed by'
+										: 'Approved by'}
+								</dt>
+								<dd className="mt-1 font-semibold text-[var(--text)]">
+									{request.approver.name}
+								</dd>
+							</div>
+						)}
+						{request.approved_at && (
+							<div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4">
+								<dt className="text-xs font-medium uppercase tracking-wide text-[var(--text-soft)]">
+									Reviewed at
+								</dt>
+								<dd className="mt-1 font-semibold text-[var(--text)]">
+									{formatDate(request.approved_at)}
+								</dd>
+							</div>
+						)}
 						{request.purpose && (
 							<div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 sm:col-span-2">
 								<dt className="text-xs font-medium uppercase tracking-wide text-[var(--text-soft)]">
@@ -191,6 +219,46 @@ export default function PublicRequestStatusPage() {
 								</dt>
 								<dd className="mt-1 whitespace-pre-wrap text-sm leading-6 text-[var(--text)]">
 									{request.purpose}
+								</dd>
+							</div>
+						)}
+						{request.transaction?.released_by?.name && (
+							<div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4">
+								<dt className="text-xs font-medium uppercase tracking-wide text-[var(--text-soft)]">
+									Released by
+								</dt>
+								<dd className="mt-1 font-semibold text-[var(--text)]">
+									{request.transaction.released_by.name}
+								</dd>
+							</div>
+						)}
+						{request.transaction?.released_at && (
+							<div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4">
+								<dt className="text-xs font-medium uppercase tracking-wide text-[var(--text-soft)]">
+									Released at
+								</dt>
+								<dd className="mt-1 font-semibold text-[var(--text)]">
+									{formatDate(request.transaction.released_at)}
+								</dd>
+							</div>
+						)}
+						{request.transaction?.received_by?.name && (
+							<div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4">
+								<dt className="text-xs font-medium uppercase tracking-wide text-[var(--text-soft)]">
+									Received by
+								</dt>
+								<dd className="mt-1 font-semibold text-[var(--text)]">
+									{request.transaction.received_by.name}
+								</dd>
+							</div>
+						)}
+						{request.transaction?.returned_at && (
+							<div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4">
+								<dt className="text-xs font-medium uppercase tracking-wide text-[var(--text-soft)]">
+									Returned at
+								</dt>
+								<dd className="mt-1 font-semibold text-[var(--text)]">
+									{formatDate(request.transaction.returned_at)}
 								</dd>
 							</div>
 						)}
@@ -246,13 +314,7 @@ export default function PublicRequestStatusPage() {
 								<Button
 									className="w-full sm:w-auto"
 									disabled={isReadOnlyAdmin}
-									onClick={() =>
-										refreshAfterAction(() =>
-											isEquipment
-												? equipmentRequestsApi.approve(request.id)
-												: supplyRequestsApi.approve(request.id),
-										)
-									}
+									onClick={() => setConfirmAction('approve')}
 								>
 									Approve request
 								</Button>
@@ -266,21 +328,15 @@ export default function PublicRequestStatusPage() {
 								</Button>
 							</>
 						)}
-						{isStaff && request.status === 'approved' && (
+						{(isAdmin || isStaff) && request.status === 'approved' && (
 							<Button
 								className="w-full sm:w-auto"
-								onClick={() =>
-									refreshAfterAction(() =>
-										isEquipment
-											? releaseReturnApi.releaseEquipment(request.id)
-											: releaseReturnApi.releaseSupply(request.id),
-									)
-								}
+								onClick={() => setConfirmAction('release')}
 							>
 								Release item
 							</Button>
 						)}
-						{isStaff &&
+						{(isAdmin || isStaff) &&
 							isEquipment &&
 							request.status === 'released' &&
 							transactionId && (
@@ -293,6 +349,7 @@ export default function PublicRequestStatusPage() {
 							)}
 					</div>
 					<ErrorAlert error={actionError} className="mt-4" />
+					<SuccessAlert message={successMessage} className="mt-4" />
 				</Card>
 			)}
 
@@ -314,12 +371,46 @@ export default function PublicRequestStatusPage() {
 				disabled={isReadOnlyAdmin}
 				title={`Decline ${isEquipment ? 'Equipment' : 'Supply'} Request`}
 				onConfirm={(reason) =>
-					refreshAfterAction(() =>
-						isEquipment
-							? equipmentRequestsApi.decline(request.id, reason)
-							: supplyRequestsApi.decline(request.id, reason),
-					)
+					refreshAfterAction(async () => {
+						if (isEquipment) {
+							await equipmentRequestsApi.decline(request.id, reason);
+						} else {
+							await supplyRequestsApi.decline(request.id, reason);
+						}
+						setSuccessMessage('Request declined successfully.');
+					})
 				}
+			/>
+			<ConfirmActionModal
+				open={!!confirmAction}
+				onClose={() => setConfirmAction(null)}
+				title={
+					confirmAction === 'approve' ? 'Approve Request' : 'Release Request'
+				}
+				message={
+					confirmAction === 'approve'
+						? `Approve ${request.quantity} unit(s) of ${itemName} for ${request.user?.name || 'the requester'}?`
+						: `Confirm that ${request.quantity} unit(s) of ${itemName} are being released to the requester.`
+				}
+				confirmLabel={
+					confirmAction === 'approve' ? 'Approve request' : 'Release item'
+				}
+				onConfirm={async () => {
+					await refreshAfterAction(async () => {
+						if (confirmAction === 'approve') {
+							await (isEquipment
+								? equipmentRequestsApi.approve(request.id)
+								: supplyRequestsApi.approve(request.id));
+							setSuccessMessage('Request approved successfully.');
+							return;
+						}
+						await (isEquipment
+							? releaseReturnApi.releaseEquipment(request.id)
+							: releaseReturnApi.releaseSupply(request.id));
+						setSuccessMessage('Request released successfully.');
+					});
+					setConfirmAction(null);
+				}}
 			/>
 
 			{isEquipment && transactionId && (
@@ -331,6 +422,7 @@ export default function PublicRequestStatusPage() {
 					onSaved={async () => {
 						setReturnOpen(false);
 						refetch();
+						setSuccessMessage('Equipment return recorded successfully.');
 					}}
 				/>
 			)}
