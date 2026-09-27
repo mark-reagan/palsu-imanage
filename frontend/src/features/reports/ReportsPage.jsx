@@ -6,7 +6,7 @@ import Badge from '../../components/ui/Badge';
 import Spinner from '../../components/ui/Spinner';
 import ErrorAlert from '../../components/ui/ErrorAlert';
 import { useApiRequest } from '../../hooks/useApiRequest';
-import { formatDateTime } from '../../lib/format';
+import { formatDateTime, titleCase } from '../../lib/format';
 import { reportsApi } from './api';
 
 const TABS = [
@@ -22,6 +22,32 @@ function StatCard({ label, value }) {
 		<div className="card">
 			<p className="text-sm text-slate-500">{label}</p>
 			<p className="mt-1 text-2xl font-bold text-slate-900">{value ?? '—'}</p>
+		</div>
+	);
+}
+
+function ReportTable({ children }) {
+	return (
+		<div className="overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface-strong)]">
+			{children}
+		</div>
+	);
+}
+
+function ActorAttribution({ actor, actionAt }) {
+	return (
+		<div className="min-w-32">
+			<p className="font-medium text-[var(--text)]">{actor?.name || '—'}</p>
+			{actor?.role && (
+				<p className="mt-0.5 text-xs text-[var(--text-soft)]">
+					{titleCase(actor.role)}
+				</p>
+			)}
+			{actionAt && (
+				<p className="mt-0.5 text-xs text-[var(--text-soft)]">
+					{formatDateTime(actionAt)}
+				</p>
+			)}
 		</div>
 	);
 }
@@ -138,12 +164,19 @@ function SupplyUsageTab() {
 		{
 			key: 'released_by',
 			header: 'Released By',
-			render: (r) => r.released_by?.name || '—',
+			render: (r) => (
+				<ActorAttribution actor={r.released_by} actionAt={r.released_at} />
+			),
 		},
 		{
-			key: 'released_at',
-			header: 'Released At',
-			render: (r) => formatDateTime(r.released_at),
+			key: 'approved_by',
+			header: 'Approved By',
+			render: (r) => (
+				<ActorAttribution
+					actor={r.supply_request?.approver}
+					actionAt={r.supply_request?.approved_at}
+				/>
+			),
 		},
 	];
 
@@ -151,11 +184,13 @@ function SupplyUsageTab() {
 	if (error) return <ErrorAlert error={error} />;
 	return (
 		<>
-			<Table
-				columns={columns}
-				rows={data?.data}
-				emptyMessage="No supply usage recorded yet."
-			/>
+			<ReportTable>
+				<Table
+					columns={columns}
+					rows={data?.data}
+					emptyMessage="No supply usage recorded yet."
+				/>
+			</ReportTable>
 			<Pagination meta={data} onPageChange={setPage} />
 		</>
 	);
@@ -181,32 +216,31 @@ function TransactionsTab() {
 		{
 			key: 'approved_by',
 			header: 'Approved By',
-			render: (r) => r.equipment_request?.approver?.name || '—',
+			render: (r) => (
+				<ActorAttribution
+					actor={r.equipment_request?.approver}
+					actionAt={r.equipment_request?.approved_at}
+				/>
+			),
 		},
 		{
 			key: 'released_by',
 			header: 'Released By',
-			render: (r) => r.released_by?.name || '—',
+			render: (r) => (
+				<ActorAttribution actor={r.released_by} actionAt={r.released_at} />
+			),
 		},
 		{
 			key: 'received_by',
 			header: 'Received By',
-			render: (r) => r.received_by?.name || '—',
+			render: (r) => (
+				<ActorAttribution actor={r.received_by} actionAt={r.returned_at} />
+			),
 		},
 		{
 			key: 'status',
 			header: 'Status',
 			render: (r) => <Badge status={r.status} />,
-		},
-		{
-			key: 'released_at',
-			header: 'Released',
-			render: (r) => formatDateTime(r.released_at),
-		},
-		{
-			key: 'returned_at',
-			header: 'Returned',
-			render: (r) => formatDateTime(r.returned_at),
 		},
 	];
 
@@ -224,18 +258,20 @@ function TransactionsTab() {
 		{
 			key: 'approved_by',
 			header: 'Approved By',
-			render: (r) => r.supply_request?.approver?.name || '—',
+			render: (r) => (
+				<ActorAttribution
+					actor={r.supply_request?.approver}
+					actionAt={r.supply_request?.approved_at}
+				/>
+			),
 		},
 		{ key: 'quantity_released', header: 'Qty' },
 		{
 			key: 'released_by',
 			header: 'Released By',
-			render: (r) => r.released_by?.name || '—',
-		},
-		{
-			key: 'released_at',
-			header: 'Released',
-			render: (r) => formatDateTime(r.released_at),
+			render: (r) => (
+				<ActorAttribution actor={r.released_by} actionAt={r.released_at} />
+			),
 		},
 	];
 
@@ -243,29 +279,56 @@ function TransactionsTab() {
 	if (error) return <ErrorAlert error={error} />;
 
 	return (
-		<div className="space-y-6">
-			<div>
-				<h3 className="mb-2 text-sm font-semibold text-slate-700">
-					Recent Equipment Transactions
-				</h3>
-				<Table
-					columns={equipmentColumns}
-					rows={
-						data.equipment_transactions?.data ?? data.equipment_transactions
-					}
-					emptyMessage="No equipment transactions yet."
-				/>
-			</div>
-			<div>
-				<h3 className="mb-2 text-sm font-semibold text-slate-700">
-					Recent Supply Transactions
-				</h3>
-				<Table
-					columns={supplyColumns}
-					rows={data.supply_transactions?.data ?? data.supply_transactions}
-					emptyMessage="No supply transactions yet."
-				/>
-			</div>
+		<div className="space-y-5">
+			<section
+				aria-labelledby="equipment-transactions-heading"
+				className="space-y-2"
+			>
+				<div>
+					<h3
+						id="equipment-transactions-heading"
+						className="text-base font-semibold text-[var(--text)]"
+					>
+						Equipment transactions
+					</h3>
+					<p className="text-sm text-[var(--text-soft)]">
+						Approver, releasing staff, and return recipient are shown with their
+						action times.
+					</p>
+				</div>
+				<ReportTable>
+					<Table
+						columns={equipmentColumns}
+						rows={
+							data.equipment_transactions?.data ?? data.equipment_transactions
+						}
+						emptyMessage="No equipment transactions yet."
+					/>
+				</ReportTable>
+			</section>
+			<section
+				aria-labelledby="supply-transactions-heading"
+				className="space-y-2"
+			>
+				<div>
+					<h3
+						id="supply-transactions-heading"
+						className="text-base font-semibold text-[var(--text)]"
+					>
+						Supply transactions
+					</h3>
+					<p className="text-sm text-[var(--text-soft)]">
+						Approval and release attribution are included for each supply issue.
+					</p>
+				</div>
+				<ReportTable>
+					<Table
+						columns={supplyColumns}
+						rows={data.supply_transactions?.data ?? data.supply_transactions}
+						emptyMessage="No supply transactions yet."
+					/>
+				</ReportTable>
+			</section>
 		</div>
 	);
 }

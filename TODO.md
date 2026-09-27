@@ -76,10 +76,10 @@ Modernize the application UI and UX while keeping the existing role-based invent
 
 ## Phase 8: Reports and Request Details
 
-- [ ] Update request details screens to display approver and releaser information
-- [ ] Improve transaction report presentation with clear actor attribution
-- [ ] Review all report sections for readability and consistent styling
-- [ ] Ensure report data is accurate with the new actor metadata
+- [x] Update request details screens to display approver and releaser information
+- [x] Improve transaction report presentation with clear actor attribution
+- [x] Review all report sections for readability and consistent styling
+- [x] Ensure report data is accurate with the new actor metadata
 
 ## Phase 9: UX and Accessibility Improvements
 
