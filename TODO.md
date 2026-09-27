@@ -6,16 +6,16 @@ Modernize the application UI and UX while keeping the existing role-based invent
 
 ## Phase 1: Branding and App Identity
 
-- [ ] Rename the app to `PalSU-iManage` everywhere it appears
-- [ ] Use the branding assets from the local `public/palsu-imanage/` folder as the primary source for logo and visual identity
-- [ ] Review the provided PalSU logo files and decide whether to remove the white background for better integration on dark/light surfaces
-- [ ] Use the `palsu-imanage-branding.png` in the app shell/nav/header when appropriate for a cleaner branded header
-- [ ] Create a modern app logo treatment that aligns with the provided branding style and can work as both a compact icon and a full wordmark
-- [ ] Match the visual style to the PalSU branding direction with a warm yellow/orange palette and a clean, modern type treatment
-- [ ] Update browser tab title and document metadata to show `PalSU-iManage`
-- [ ] Ensure brand text appears consistently across login, dashboard, layout, sidebar, header, and modal states
-- [ ] Add a modern branded splash/loading screen on initial app load
-- [ ] Keep the branding consistent across desktop and mobile layouts without breaking readability or contrast
+- [x] Rename the app to `PalSU-iManage` everywhere it appears
+- [x] Use the branding assets from the local `public/palsu-imanage/` folder as the primary source for logo and visual identity
+- [x] Review the provided PalSU logo files and decide whether to remove the white background for better integration on dark/light surfaces
+- [x] Use the `palsu-imanage-branding.png` in the app shell/nav/header when appropriate for a cleaner branded header
+- [x] Create a modern app logo treatment that aligns with the provided branding style and can work as both a compact icon and a full wordmark
+- [x] Match the visual style to the PalSU branding direction with a warm yellow/orange palette and a clean, modern type treatment
+- [x] Update browser tab title and document metadata to show `PalSU-iManage`
+- [x] Ensure brand text appears consistently across login, dashboard, layout, sidebar, header, and modal states
+- [x] Add a modern branded splash/loading screen on initial app load
+- [x] Keep the branding consistent across desktop and mobile layouts without breaking readability or contrast
 
 ## Phase 2: Design System and Visual Refresh
 
@@ -31,6 +31,7 @@ Modernize the application UI and UX while keeping the existing role-based invent
 ## Phase 3: App Layout and Navigation
 
 - [ ] Add modern responsive sidebar / hamburger navigation behavior
+- [ ] Ensure the mobile navigation drawer background uses a warm orange-toned color close to the PalSU logo branding instead of a neutral or white background
 - [ ] Ensure menu animations and transitions work smoothly on all screen sizes
 - [ ] Apply consistent hierarchy in navigation, headers, and page actions
 - [ ] Remove equipment and supplies navigation from staff login views

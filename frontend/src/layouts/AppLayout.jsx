@@ -51,13 +51,20 @@ export default function AppLayout() {
 		<div className="min-h-screen bg-slate-50">
 			{/* Desktop sidebar */}
 			<aside className="fixed inset-y-0 left-0 hidden w-64 flex-col border-r border-slate-200 bg-white lg:flex">
-				<div className="flex items-center gap-2 px-5 py-5">
-					<img src="/logo.svg" alt="" className="h-8 w-8" />
-					<span className="text-sm font-bold leading-tight text-slate-900">
-						School Inventory
-						<br />
-						Property Mgmt.
-					</span>
+				<div className="flex items-center gap-3 px-5 py-5">
+					<img
+						src="/palsu-imanage/palsu-imanage-logo.svg"
+						alt="PalSU-iManage logo"
+						className="h-10 w-10"
+					/>
+					<div className="leading-tight">
+						<span className="block text-sm font-black tracking-tight text-orange-600">
+							PalSU-iManage
+						</span>
+						<span className="block text-[10px] font-semibold uppercase tracking-[0.2em] text-amber-700">
+							Inventory
+						</span>
+					</div>
 				</div>
 				<SidebarLinks role={user.role} />
 				<div className="border-t border-slate-100 p-3">
@@ -78,9 +85,13 @@ export default function AppLayout() {
 					<aside className="relative z-10 flex h-full w-64 flex-col bg-white">
 						<div className="flex items-center justify-between px-5 py-5">
 							<div className="flex items-center gap-2">
-								<img src="/logo.svg" alt="" className="h-8 w-8" />
-								<span className="text-sm font-bold text-slate-900">
-									School Inventory
+								<img
+									src="/palsu-imanage/palsu-imanage-logo.svg"
+									alt="PalSU-iManage logo"
+									className="h-8 w-8"
+								/>
+								<span className="text-sm font-black tracking-tight text-orange-600">
+									PalSU-iManage
 								</span>
 							</div>
 							<button

@@ -1,14 +1,40 @@
 {
-  "name": "School Inventory Property Management System",
-  "short_name": "SIPMS",
-  "description": "Web-based school inventory, request, release/return and reporting system.",
-  "start_url": "/",
-  "display": "standalone",
-  "background_color": "#f8fafc",
-  "theme_color": "#4338ca",
-  "icons": [
-    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
-    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" },
-    { "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" }
-  ]
+	"name": "PalSU-iManage",
+	"short_name": "PalSU-iManage",
+	"description": "PalSU-iManage inventory, request, approval, and reporting system for school assets and supplies.",
+	"start_url": "/",
+	"display": "standalone",
+	"background_color": "#fff7ed",
+	"theme_color": "#f59e0b",
+	"icons": [
+		{
+			"src": "/palsu-imanage/palsu-imanage-logo-16x16.png",
+			"sizes": "16x16",
+			"type": "image/png",
+			"purpose": "any maskable"
+		},
+		{
+			"src": "/palsu-imanage/palsu-imanage-logo-32x32.png",
+			"sizes": "32x32",
+			"type": "image/png",
+			"purpose": "any maskable"
+		},
+		{
+			"src": "/palsu-imanage/palsu-imanage-apple-touch-icon.png",
+			"sizes": "180x180",
+			"type": "image/png"
+		},
+		{
+			"src": "/palsu-imanage/palsu-imanage-logo-32x32.png",
+			"sizes": "192x192",
+			"type": "image/png",
+			"purpose": "any maskable"
+		},
+		{
+			"src": "/palsu-imanage/palsu-imanage-logo-32x32.png",
+			"sizes": "512x512",
+			"type": "image/png",
+			"purpose": "any maskable"
+		}
+	]
 }

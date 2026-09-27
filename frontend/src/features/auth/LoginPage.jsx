@@ -30,11 +30,9 @@ export default function LoginPage() {
 	}
 
 	return (
-		<div className="w-full max-w-sm">
+		<div className="w-full max-w-sm rounded-2xl border border-orange-100 bg-white/90 p-6 shadow-lg shadow-amber-100/60 backdrop-blur-sm">
 			<h1 className="mb-1 text-2xl font-bold text-slate-900">Welcome back</h1>
-			<p className="mb-6 text-sm text-slate-500">
-				Sign in to the School Inventory system.
-			</p>
+			<p className="mb-6 text-sm text-slate-500">Sign in to PalSU-iManage.</p>
 
 			<form onSubmit={handleSubmit} className="space-y-4">
 				<Input
