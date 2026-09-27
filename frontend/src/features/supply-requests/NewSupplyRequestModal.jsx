@@ -48,6 +48,15 @@ function NewSupplyRequestModalContent({
 	const [loading, setLoading] = useState(false);
 	const [confirming, setConfirming] = useState(false);
 
+	function removeBatchItem(index) {
+		setBatch((current) => {
+			const next = current.filter((_, i) => i !== index);
+			// Nothing left to request, so close the modal
+			if (next.length === 0) onClose();
+			return next;
+		});
+	}
+
 	function handleReviewSubmit(e) {
 		e.preventDefault();
 		setError(null);
@@ -168,9 +177,9 @@ function NewSupplyRequestModalContent({
 						{batch.map((item, index) => (
 							<div
 								key={item.supply_id}
-								className="rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] p-4"
+								className="rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 transition-all duration-200 ease-out"
 							>
-								<div className="mb-3 flex items-center justify-between gap-2">
+								<div className="mb-3 flex items-center justify-between gap-3">
 									<div>
 										<p className="font-medium text-[var(--text)]">
 											{item.name}
@@ -203,6 +212,7 @@ function NewSupplyRequestModalContent({
 										}
 									/>
 								</div>
+
 								<Textarea
 									label="Purpose"
 									required
@@ -218,6 +228,17 @@ function NewSupplyRequestModalContent({
 										)
 									}
 								/>
+
+								<div className="flex justify-center pt-2">
+									<Button
+										type="button"
+										variant="danger"
+										onClick={() => removeBatchItem(index)}
+										className="px-6"
+									>
+										Remove item
+									</Button>
+								</div>
 							</div>
 						))}
 					</div>

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 export default function Modal({
@@ -11,6 +11,22 @@ export default function Modal({
 }) {
 	const contentRef = useRef(null);
 	const overlayRef = useRef(null);
+	// Keep the modal mounted briefly on close so the exit transition can play
+	const [rendered, setRendered] = useState(open);
+	const [visible, setVisible] = useState(false);
+
+	// Adjust state during render (not in an effect) for the synchronous parts
+	if (open && !rendered) setRendered(true);
+	if (!open && visible) setVisible(false);
+
+	useEffect(() => {
+		if (open) {
+			const raf = requestAnimationFrame(() => setVisible(true));
+			return () => cancelAnimationFrame(raf);
+		}
+		const timeout = setTimeout(() => setRendered(false), 200);
+		return () => clearTimeout(timeout);
+	}, [open]);
 
 	useEffect(() => {
 		if (!open) return;
@@ -32,7 +48,7 @@ export default function Modal({
 		}
 	}
 
-	if (!open) return null;
+	if (!rendered) return null;
 
 	const widthClass = { sm: 'max-w-sm', md: 'max-w-lg', lg: 'max-w-2xl' }[size];
 
@@ -44,7 +60,7 @@ export default function Modal({
 		>
 			<div
 				ref={overlayRef}
-				className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+				className={`absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity duration-200 ease-out ${visible ? 'opacity-100' : 'opacity-0'}`}
 				onClick={handleOverlayClick}
 				aria-hidden="true"
 			/>
@@ -52,7 +68,7 @@ export default function Modal({
 				ref={contentRef}
 				tabIndex={-1}
 				role="document"
-				className={`relative z-10 my-auto max-h-[calc(100dvh-1.5rem)] w-full overflow-y-auto touch-manipulation ${widthClass} rounded-2xl border border-[var(--border)] bg-[var(--surface-strong)] p-4 text-[var(--text)] shadow-soft sm:max-h-[calc(100dvh-2rem)] sm:p-6 interactive-focus`}
+				className={`relative z-10 my-auto max-h-[calc(100dvh-1.5rem)] w-full overflow-y-auto touch-manipulation ${widthClass} rounded-2xl border border-[var(--border)] bg-[var(--surface-strong)] p-4 text-[var(--text)] shadow-soft sm:max-h-[calc(100dvh-2rem)] sm:p-6 interactive-focus transition-all duration-200 ease-out ${visible ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`}
 			>
 				<div className="mb-4 flex items-start justify-between gap-3">
 					<h3

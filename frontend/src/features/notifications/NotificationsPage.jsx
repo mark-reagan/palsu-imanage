@@ -27,7 +27,7 @@ export default function NotificationsPage() {
 	const unreadCount = data?.data?.filter((n) => !n.read_at).length || 0;
 
 	useEffect(() => {
-		document.title = unreadCount > 0 ? `(${unreadCount}) PalSU-iManage` : 'PalSU-iManage';
+		document.title = unreadCount > 0 ? `(${unreadCount}) ${APP_NAME}` : APP_NAME;
 	}, [unreadCount]);
 
 	useEffect(() => {

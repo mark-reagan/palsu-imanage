@@ -50,6 +50,15 @@ function NewEquipmentRequestModalContent({
 	const [loading, setLoading] = useState(false);
 	const [confirming, setConfirming] = useState(false);
 
+	function removeBatchItem(index) {
+		setBatch((current) => {
+			const next = current.filter((_, i) => i !== index);
+			// Nothing left to request, so close the modal
+			if (next.length === 0) onClose();
+			return next;
+		});
+	}
+
 	function update(field, value) {
 		setForm((f) => ({ ...f, [field]: value }));
 	}
@@ -193,9 +202,9 @@ function NewEquipmentRequestModalContent({
 						{batch.map((item, index) => (
 							<div
 								key={item.equipment_id}
-								className="rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] p-4"
+								className="rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 transition-all duration-200 ease-out"
 							>
-								<div className="mb-3 flex items-center justify-between gap-2">
+								<div className="mb-3 flex items-center justify-between gap-3">
 									<div>
 										<p className="font-medium text-[var(--text)]">
 											{item.name}
@@ -251,6 +260,17 @@ function NewEquipmentRequestModalContent({
 										updateBatch(index, 'purpose', e.target.value)
 									}
 								/>
+
+								<div className="flex justify-center pt-2">
+									<Button
+										type="button"
+										variant="danger"
+										onClick={() => removeBatchItem(index)}
+										className="px-6"
+									>
+										Remove item
+									</Button>
+								</div>
 							</div>
 						))}
 					</div>
