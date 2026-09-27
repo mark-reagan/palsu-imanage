@@ -1,4 +1,4 @@
-import { Suspense, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../features/auth/useAuth';
 import NotificationBell from '../features/notifications/NotificationBell';
@@ -48,6 +48,22 @@ export default function AppLayout() {
 	const { theme, toggleTheme } = useTheme();
 	const [mobileOpen, setMobileOpen] = useState(false);
 
+	useEffect(() => {
+		if (!mobileOpen) return undefined;
+
+		const previousOverflow = document.body.style.overflow;
+		function handleKeyDown(event) {
+			if (event.key === 'Escape') setMobileOpen(false);
+		}
+
+		document.body.style.overflow = 'hidden';
+		document.addEventListener('keydown', handleKeyDown);
+		return () => {
+			document.body.style.overflow = previousOverflow;
+			document.removeEventListener('keydown', handleKeyDown);
+		};
+	}, [mobileOpen]);
+
 	async function handleLogout() {
 		await logout();
 		navigate('/login', { replace: true });
@@ -84,45 +100,59 @@ export default function AppLayout() {
 			</aside>
 
 			{/* Mobile sidebar */}
-			{mobileOpen && (
-				<div className="fixed inset-0 z-40 lg:hidden">
-					<div
-						className="absolute inset-0 bg-slate-900/50"
-						onClick={() => setMobileOpen(false)}
-					/>
-					<aside className="relative z-10 flex h-full w-72 flex-col bg-gradient-to-b from-orange-500 via-orange-500 to-amber-500 text-white shadow-2xl">
-						<div className="flex items-center justify-between border-b border-orange-200 bg-white px-5 py-5 text-slate-800">
-							<div className="flex items-center gap-2">
-								<img
-									src="/palsu-imanage/palsu-imanage-logo.svg"
-									alt="PalSU-iManage logo"
-									className="h-8 w-8"
-								/>
-								<span className="brand-text text-sm font-black tracking-tight text-slate-800">
-									PalSU-iManage
-								</span>
-							</div>
-							<button
-								onClick={() => setMobileOpen(false)}
-								aria-label="Close menu"
-								className="mobile-close-button rounded-full p-2 text-slate-800 hover:bg-orange-100"
-								style={{ color: '#1f2937' }}
-							>
-								<Icon
-									name="close"
-									className="h-5 w-5"
-									style={{ color: '#1f2937', stroke: '#1f2937' }}
-								/>
-							</button>
+			<div
+				className={`fixed inset-0 z-40 transition-opacity duration-300 motion-reduce:transition-none lg:hidden ${
+					mobileOpen
+						? 'pointer-events-auto opacity-100'
+						: 'pointer-events-none opacity-0'
+				}`}
+				aria-hidden={!mobileOpen}
+			>
+				<button
+					type="button"
+					className="absolute inset-0 h-full w-full bg-slate-900/50"
+					aria-label="Close navigation menu"
+					tabIndex={mobileOpen ? 0 : -1}
+					onClick={() => setMobileOpen(false)}
+				/>
+				<aside
+					inert={!mobileOpen}
+					aria-label="Mobile navigation"
+					className={`relative z-10 flex h-full w-72 flex-col bg-gradient-to-b from-orange-500 via-orange-500 to-amber-500 text-white shadow-2xl transition-transform duration-300 ease-in-out motion-reduce:transition-none ${
+						mobileOpen ? 'translate-x-0' : '-translate-x-full'
+					}`}
+				>
+					<div className="flex items-center justify-between border-b border-orange-200 bg-white px-5 py-5 text-slate-800">
+						<div className="flex items-center gap-2">
+							<img
+								src="/palsu-imanage/palsu-imanage-logo.svg"
+								alt="PalSU-iManage logo"
+								className="h-8 w-8"
+							/>
+							<span className="brand-text text-sm font-black tracking-tight text-slate-800">
+								PalSU-iManage
+							</span>
 						</div>
-						<SidebarLinks
-							role={user.role}
-							onNavigate={() => setMobileOpen(false)}
-							mobile
-						/>
-					</aside>
-				</div>
-			)}
+						<button
+							onClick={() => setMobileOpen(false)}
+							aria-label="Close menu"
+							className="mobile-close-button rounded-full p-2 text-slate-800 hover:bg-orange-100"
+							style={{ color: '#1f2937' }}
+						>
+							<Icon
+								name="close"
+								className="h-5 w-5"
+								style={{ color: '#1f2937', stroke: '#1f2937' }}
+							/>
+						</button>
+					</div>
+					<SidebarLinks
+						role={user.role}
+						onNavigate={() => setMobileOpen(false)}
+						mobile
+					/>
+				</aside>
+			</div>
 
 			<div className="lg:pl-64">
 				<header className="sticky top-0 z-30 flex items-center justify-between border-b border-[var(--border)] bg-[var(--surface)]/80 px-4 py-3 backdrop-blur sm:px-6">
@@ -156,9 +186,14 @@ export default function AppLayout() {
 						<NotificationBell />
 						<NavLink
 							to="/profile"
-							className="hidden text-sm font-medium text-[var(--text-soft)] hover:text-[var(--text)] sm:block"
+							aria-label={`Profile: ${user.name}`}
+							title="Profile"
+							className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--surface-muted)] text-sm font-semibold text-[var(--text)] hover:bg-[var(--surface)] sm:h-auto sm:w-auto sm:rounded-lg sm:px-2 sm:py-1.5 sm:font-medium sm:text-[var(--text-soft)] sm:hover:text-[var(--text)]"
 						>
-							{user.name}
+							<span className="sm:hidden">
+								{user.name.charAt(0).toUpperCase()}
+							</span>
+							<span className="hidden sm:inline">{user.name}</span>
 						</NavLink>
 						<button
 							onClick={handleLogout}

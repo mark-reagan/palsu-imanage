@@ -30,13 +30,13 @@ Modernize the application UI and UX while keeping the existing role-based invent
 
 ## Phase 3: App Layout and Navigation
 
-- [ ] Add modern responsive sidebar / hamburger navigation behavior
-- [ ] Ensure the mobile navigation drawer background uses a warm orange-toned color close to the PalSU logo branding instead of a neutral or white background
-- [ ] Ensure menu animations and transitions work smoothly on all screen sizes
-- [ ] Apply consistent hierarchy in navigation, headers, and page actions
-- [ ] Remove equipment and supplies navigation from staff login views
-- [ ] Ensure dashboard navigation and route structure match role requirements
-- [ ] Add a consistent topbar/action area for profile, theme toggle, notifications, and logout
+- [x] Add modern responsive sidebar / hamburger navigation behavior
+- [x] Ensure the mobile navigation drawer background uses a warm orange-toned color close to the PalSU logo branding instead of a neutral or white background
+- [x] Ensure menu animations and transitions work smoothly on all screen sizes
+- [x] Apply consistent hierarchy in navigation, headers, and page actions
+- [x] Remove equipment and supplies navigation from staff login views
+- [x] Ensure dashboard navigation and route structure match role requirements
+- [x] Add a consistent topbar/action area for profile, theme toggle, notifications, and logout
 
 ## Phase 4: Authentication and Account Creation
 

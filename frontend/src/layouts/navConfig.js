@@ -7,11 +7,16 @@ import { ROLES } from '../lib/constants';
 export const NAV_ITEMS = [
 	{ to: '/', label: 'Dashboard', roles: null, icon: 'home' },
 	{ to: '/notifications', label: 'Notifications', roles: null, icon: 'bell' },
-	{ to: '/equipment', label: 'Equipment', roles: null, icon: 'box' },
+	{
+		to: '/equipment',
+		label: 'Equipment',
+		roles: [ROLES.ADMIN, ROLES.FACULTY, ROLES.OUTSIDER],
+		icon: 'box',
+	},
 	{
 		to: '/supplies',
 		label: 'Supplies',
-		roles: [ROLES.ADMIN, ROLES.STAFF, ROLES.FACULTY],
+		roles: [ROLES.ADMIN, ROLES.FACULTY],
 		icon: 'archive',
 	},
 	{
@@ -33,7 +38,7 @@ export const NAV_ITEMS = [
 		icon: 'exchange',
 	},
 	{
-		to: '/barcode-scan',
+		to: '/qr-scan',
 		label: 'QR Scan',
 		roles: [ROLES.STAFF],
 		icon: 'camera',

@@ -54,13 +54,17 @@ export default function AppRoutes() {
 				<Route element={<ProtectedRoute />}>
 					<Route element={<AppLayout />}>
 						<Route path="/" element={<DashboardPage />} />
-						<Route path="/equipment" element={<EquipmentListPage />} />
 						<Route
 							element={
 								<ProtectedRoute
-									roles={[ROLES.ADMIN, ROLES.STAFF, ROLES.FACULTY]}
+									roles={[ROLES.ADMIN, ROLES.FACULTY, ROLES.OUTSIDER]}
 								/>
 							}
+						>
+							<Route path="/equipment" element={<EquipmentListPage />} />
+						</Route>
+						<Route
+							element={<ProtectedRoute roles={[ROLES.ADMIN, ROLES.FACULTY]} />}
 						>
 							<Route path="/supplies" element={<SuppliesListPage />} />
 						</Route>
