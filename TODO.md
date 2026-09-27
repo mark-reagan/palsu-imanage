@@ -47,14 +47,15 @@ Modernize the application UI and UX while keeping the existing role-based invent
 
 ## Phase 5: Notifications System
 
-- [ ] Make notification items clickable and open the relevant detail or page
-- [ ] Create a dedicated notifications page that lists all notifications
-- [ ] Add pagination or infinite scrolling for notification history
-- [ ] On desktop, display notifications in a floating modal/dropdown
-- [ ] On mobile, open notifications as a full page view
-- [ ] Add notification sound behavior for new notifications
-- [ ] Ensure unread/read state styling is clear and modern
-- [ ] Keep notification access consistent across roles
+- [x] Make notification items clickable and open the relevant detail or page
+- [x] Create a dedicated notifications page that lists all notifications
+- [x] Add pagination or infinite scrolling for notification history
+- [x] On desktop, display notifications in a floating modal/dropdown
+- [x] On mobile, open notifications as a full page view
+- [x] Add opt-in notification sound behavior for new notifications
+- [x] Deliver notification changes over authenticated per-user realtime channels, with polling as a fallback
+- [x] Ensure unread/read state styling is clear and modern
+- [x] Keep notification access consistent across roles
 
 ## Phase 6: Request Workflows
 

@@ -72,3 +72,18 @@ Set these environment variables in Render (use your actual service/domain values
 The Docker entrypoint runs `php artisan migrate --force` and `php artisan db:seed --force` before Apache starts, so migrations and seeders run automatically on Render deployments, including the Free plan where Shell and pre-deploy commands may be unavailable. Set `ADMIN_EMAIL` and `ADMIN_PASSWORD` in Render to create the production admin account; optionally set `STAFF_EMAIL` and `STAFF_PASSWORD` to create a staff account. Use strong unique passwords. Without these variables, the seeder skips those accounts in production rather than using the development-only default credentials. Seeding uses `firstOrCreate`, so it will not change passwords on existing accounts. A migration or seeding failure stops the container from serving requests; check deploy logs and database connectivity if startup fails. Render's local filesystem is ephemeral; use a managed database and durable object storage if the app later needs persistent uploads.
 
 The Docker image explicitly installs PHP GD (for PNG QR generation) and `pdo_mysql`, and Composer verifies those requirements during image build. To build and smoke-test locally, run `docker build -t inventory-api .` from `backend/`, then start the container with a valid `.env`/database configuration and verify `GET /up`.
+
+## Realtime notifications
+
+Notifications use Laravel Reverb and authenticated private user channels. Set
+`BROADCAST_CONNECTION=reverb` and configure `REVERB_APP_ID`,
+`REVERB_APP_KEY`, `REVERB_APP_SECRET`, `REVERB_HOST`, `REVERB_PORT`, and
+`REVERB_SCHEME` in the backend environment. The frontend build needs matching
+`VITE_REVERB_APP_KEY`, `VITE_REVERB_HOST`, `VITE_REVERB_PORT`, and
+`VITE_REVERB_SCHEME` values. Ensure `FRONTEND_URLS` contains each allowed
+frontend origin.
+
+For live delivery, deploy `php artisan reverb:start` as a persistent WebSocket
+service and `php artisan queue:work` as a persistent worker. Expose Reverb over
+TLS in production. The frontend keeps periodic notification refresh as a
+fallback if the WebSocket is unavailable.

@@ -59,6 +59,13 @@ The Laravel API must also allow the deployed Pages domain(s) in its
 `FRONTEND_URLS` environment variable for CORS. Include preview domains only
 if previews are expected to call the API.
 
+For realtime notifications, configure `VITE_REVERB_APP_KEY`,
+`VITE_REVERB_HOST`, `VITE_REVERB_PORT`, and `VITE_REVERB_SCHEME` in the
+frontend build environment to match the backend Reverb app. The backend must
+also run `php artisan reverb:start` and a persistent `php artisan queue:work`
+service; otherwise the notification API continues working using its periodic
+refresh fallback, but updates will not be pushed live.
+
 ---
 
 ## Architecture

@@ -1,31 +1,54 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Card from '../../components/ui/Card';
 import Pagination from '../../components/ui/Pagination';
-import Spinner from '../../components/ui/Spinner';
+import PageSkeleton from '../../components/ui/PageSkeleton';
 import ErrorAlert from '../../components/ui/ErrorAlert';
 import { useApiRequest } from '../../hooks/useApiRequest';
 import { formatDateTime } from '../../lib/format';
 import { notificationsApi } from './api';
 import { useOfflineMode } from '../../hooks/useOfflineMode';
+import {
+	getNotificationPath,
+	useNotificationSoundPreference,
+} from './notificationUtils';
 
 export default function NotificationsPage() {
+	const navigate = useNavigate();
 	const [page, setPage] = useState(1);
+	const [soundEnabled, setSoundPreference] = useNotificationSoundPreference();
 	const { isReadOnlyAdmin } = useOfflineMode();
 	const { data, error, loading, refetch } = useApiRequest(
 		(signal) => notificationsApi.list({ page }, signal),
 		[page],
 	);
 
-	async function handleMarkRead(id) {
-		if (isReadOnlyAdmin) return;
-		await notificationsApi.markRead(id);
-		refetch();
+	useEffect(() => {
+		window.addEventListener('app-notification-received', refetch);
+		return () =>
+			window.removeEventListener('app-notification-received', refetch);
+	}, [refetch]);
+
+	async function handleOpen(notification) {
+		if (!notification.read_at && !isReadOnlyAdmin) {
+			try {
+				await notificationsApi.markRead(notification.id);
+				refetch();
+			} catch {
+				// Keep navigation available even when updating read state fails.
+			}
+		}
+		navigate(getNotificationPath(notification));
 	}
 
 	async function handleMarkAll() {
 		if (isReadOnlyAdmin) return;
 		await notificationsApi.markAllRead();
 		refetch();
+	}
+
+	function toggleSound() {
+		setSoundPreference(!soundEnabled);
 	}
 
 	return (
@@ -37,53 +60,72 @@ export default function NotificationsPage() {
 						Review updates about requests, inventory, and account activity.
 					</p>
 				</div>
-				<button
-					className="btn-secondary btn-sm"
-					onClick={handleMarkAll}
-					disabled={isReadOnlyAdmin || loading || !data?.data?.length}
-				>
-					Mark all read
-				</button>
+				<div className="flex items-center gap-2">
+					<button
+						className="btn-secondary btn-sm"
+						onClick={toggleSound}
+						aria-pressed={soundEnabled}
+					>
+						Sound {soundEnabled ? 'on' : 'off'}
+					</button>
+					<button
+						className="btn-secondary btn-sm"
+						onClick={handleMarkAll}
+						disabled={
+							isReadOnlyAdmin || loading || !data?.data?.some((n) => !n.read_at)
+						}
+					>
+						Mark all read
+					</button>
+				</div>
 			</div>
 
 			<Card>
-				{loading && <Spinner />}
+				{loading && <PageSkeleton rows={2} />}
 				<ErrorAlert error={error} />
 				{!loading && !error && (
 					<>
-						<div className="divide-y divide-slate-100">
+						<div className="divide-y divide-[var(--border)]">
 							{data?.data?.length ? (
 								data.data.map((notification) => (
 									<button
 										key={notification.id}
-										onClick={() => handleMarkRead(notification.id)}
-										disabled={isReadOnlyAdmin}
-										className="block w-full px-2 py-4 text-left hover:bg-[var(--surface-muted)]"
+										onClick={() => handleOpen(notification)}
+										className={`block w-full rounded-lg px-3 py-4 text-left transition-colors hover:bg-[var(--surface-muted)] ${notification.read_at ? 'bg-transparent' : 'bg-[var(--accent-soft)]'}`}
 									>
 										<div className="flex items-start justify-between gap-4">
 											<div>
-												<p className="font-medium text-slate-900">
+												<p className="flex items-center gap-2 font-medium text-[var(--text)]">
+													{!notification.read_at && (
+														<span
+															className="h-2 w-2 shrink-0 rounded-full bg-[var(--accent-strong)]"
+															aria-hidden="true"
+														/>
+													)}
 													{notification.data?.title || 'Notification'}
 												</p>
+												{!notification.read_at && (
+													<span className="sr-only">Unread</span>
+												)}
 												{notification.data?.item_name && (
-													<p className="mt-1 text-sm text-slate-600">
+													<p className="mt-1 text-sm text-[var(--text-soft)]">
 														{notification.data.item_name}
 													</p>
 												)}
 												{notification.data?.reason && (
-													<p className="mt-1 text-sm text-slate-600">
+													<p className="mt-1 text-sm text-[var(--text-soft)]">
 														Reason: {notification.data.reason}
 													</p>
 												)}
 											</div>
-											<time className="shrink-0 text-xs text-slate-400">
+											<time className="shrink-0 text-xs text-[var(--text-soft)]">
 												{formatDateTime(notification.created_at)}
 											</time>
 										</div>
 									</button>
 								))
 							) : (
-								<p className="py-10 text-center text-sm text-slate-400">
+								<p className="py-10 text-center text-sm text-[var(--text-soft)]">
 									No notifications yet.
 								</p>
 							)}

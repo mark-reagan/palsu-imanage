@@ -1,28 +1,62 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { notificationsApi } from './api';
+import {
+	getNotificationPath,
+	playNotificationSound,
+	useNotificationSoundPreference,
+} from './notificationUtils';
 import { formatDateTime } from '../../lib/format';
 import { useOfflineMode } from '../../hooks/useOfflineMode';
+import { useAuth } from '../auth/useAuth';
+import { getNotificationEcho, leaveNotificationChannel } from './realtime';
 
 export default function NotificationBell() {
+	const navigate = useNavigate();
 	const [open, setOpen] = useState(false);
 	const [items, setItems] = useState([]);
 	const [loading, setLoading] = useState(false);
+	const [soundEnabled, setSoundPreference] = useNotificationSoundPreference();
 	const { isReadOnlyAdmin } = useOfflineMode();
+	const { user } = useAuth();
 	const ref = useRef(null);
+	const knownUnreadRef = useRef(null);
 
 	const loadUnread = useCallback(() => {
 		notificationsApi
 			.unread()
-			.then(setItems)
+			.then((unread) => {
+				const previousIds = knownUnreadRef.current;
+				const newNotificationArrived =
+					previousIds && unread.some((item) => !previousIds.has(item.id));
+				knownUnreadRef.current = new Set(unread.map((item) => item.id));
+				setItems(unread);
+				if (newNotificationArrived) {
+					if (soundEnabled) playNotificationSound();
+					window.dispatchEvent(new Event('app-notification-received'));
+				}
+			})
 			.catch(() => setItems([]));
-	}, []);
+	}, [soundEnabled]);
 
 	useEffect(() => {
 		loadUnread();
-		const interval = setInterval(loadUnread, 30000);
+		const interval = setInterval(loadUnread, 120000);
 		return () => clearInterval(interval);
 	}, [loadUnread]);
+
+	useEffect(() => {
+		if (!user?.id) return undefined;
+		const echo = getNotificationEcho();
+		if (!echo) return undefined;
+
+		const channel = echo.private(`App.Models.User.${user.id}`);
+		channel.notification(() => loadUnread());
+
+		return () => {
+			leaveNotificationChannel(user.id);
+		};
+	}, [user?.id, loadUnread]);
 
 	useEffect(() => {
 		function onClickOutside(e) {
@@ -44,17 +78,40 @@ export default function NotificationBell() {
 	}
 
 	async function handleMarkOne(id) {
-		if (isReadOnlyAdmin) return;
-		await notificationsApi.markRead(id);
-		setItems((prev) => prev.filter((n) => n.id !== id));
+		const notification = items.find((item) => item.id === id);
+		if (!notification) return;
+		if (!isReadOnlyAdmin) {
+			try {
+				await notificationsApi.markRead(id);
+				setItems((prev) => prev.filter((item) => item.id !== id));
+			} catch {
+				// Keep navigation available even when updating read state fails.
+			}
+		}
+		setOpen(false);
+		navigate(getNotificationPath(notification));
+	}
+
+	function toggleSound() {
+		setSoundPreference(!soundEnabled);
+	}
+
+	function toggleNotifications() {
+		if (window.matchMedia('(max-width: 639px)').matches) {
+			setOpen(false);
+			navigate('/notifications');
+			return;
+		}
+		setOpen((current) => !current);
 	}
 
 	return (
 		<div className="relative" ref={ref}>
 			<button
-				onClick={() => setOpen((o) => !o)}
+				onClick={toggleNotifications}
 				className="relative rounded-full p-2 text-[var(--text-soft)] hover:bg-[var(--surface-muted)]"
 				aria-label="Notifications"
+				aria-expanded={open}
 			>
 				<svg
 					className="h-5 w-5"
@@ -84,6 +141,14 @@ export default function NotificationBell() {
 							Notifications
 						</p>
 						<div className="flex items-center gap-3">
+							<button
+								type="button"
+								onClick={toggleSound}
+								className="text-xs font-medium text-[var(--text-soft)] hover:text-[var(--text)]"
+								aria-pressed={soundEnabled}
+							>
+								Sound {soundEnabled ? 'on' : 'off'}
+							</button>
 							<Link
 								to="/notifications"
 								onClick={() => setOpen(false)}
@@ -110,7 +175,7 @@ export default function NotificationBell() {
 								<button
 									key={n.id}
 									onClick={() => handleMarkOne(n.id)}
-									disabled={isReadOnlyAdmin}
+									disabled={loading}
 									className="block w-full rounded-lg px-2 py-2 text-left text-sm hover:bg-[var(--surface-muted)]"
 								>
 									<p className="font-medium text-[var(--text)]">

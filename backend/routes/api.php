@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\PublicRequestController;
 use App\Http\Controllers\Api\SupplyController;
 use App\Http\Controllers\Api\SupplyRequestController;
 use App\Http\Controllers\Api\UserController;
+use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -31,6 +32,8 @@ Route::get('/public/requests/{trackingToken}/qr', [PublicRequestController::clas
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth:sanctum', 'active'])->group(function () {
+    Broadcast::routes(['middleware' => ['auth:sanctum', 'active']]);
+
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
     Route::put('/profile', [AuthController::class, 'updateProfile']);

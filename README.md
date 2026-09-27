@@ -5,6 +5,7 @@ A full-stack web application for managing school equipment and supplies inventor
 ## Overview
 
 This system enables schools to efficiently manage:
+
 - **Equipment & Supplies Inventory** — track assets with QR codes and barcodes
 - **Request & Reservation Workflow** — faculty/staff request equipment/supplies with approval process
 - **Release & Return Workflow** — staff manage equipment check-out/check-in with condition tracking
@@ -18,6 +19,7 @@ This system enables schools to efficiently manage:
 ## Stack
 
 ### Backend
+
 - **Framework**: Laravel 13.17
 - **Language**: PHP 8.4
 - **Database**: SQLite (default) or configurable via `.env`
@@ -27,6 +29,7 @@ This system enables schools to efficiently manage:
 - **Testing**: PHPUnit 12.5
 
 ### Frontend
+
 - **Framework**: React 18.3
 - **Build Tool**: Vite 5.4
 - **Styling**: Tailwind CSS 3.4
@@ -93,6 +96,7 @@ christian-bundac/
 ## Quick Start
 
 ### Prerequisites
+
 - **PHP 8.4+** with composer
 - **Node.js 18+** with npm
 - **SQLite** or a configured database (MySQL, PostgreSQL)
@@ -131,6 +135,7 @@ npm run dev
 Frontend runs on `http://localhost:5173`
 
 Edit `.env` if your backend API isn't on the default host:
+
 ```
 VITE_API_URL=http://localhost:8000/api
 ```
@@ -147,6 +152,7 @@ npm run preview    # Test production build locally
 ## Architecture Highlights
 
 ### Backend (Laravel)
+
 - **RESTful API** with standardized response formats
 - **Token-based auth** via Sanctum (bearer tokens in `Authorization` header)
 - **Eloquent ORM** with model relationships (Equipment → Requests, Concerns, etc.)
@@ -156,6 +162,7 @@ npm run preview    # Test production build locally
 - **Seeders** for test data initialization
 
 ### Frontend (React + Vite)
+
 - **Feature-based architecture** — each domain (equipment, requests, concerns) owns its API client, pages, and modals
 - **Role-aware routing** via `ProtectedRoute` and `PublicOnlyRoute` guards
 - **Code splitting** — every route is lazy-loaded with `React.lazy()` behind a `<Suspense>` boundary
@@ -169,6 +176,7 @@ npm run preview    # Test production build locally
 ## Key Features
 
 ### Equipment & Supplies Management
+
 - Create, read, update, disable equipment/supplies
 - Track total and available quantities
 - Auto-generate QR codes and barcodes
@@ -176,47 +184,54 @@ npm run preview    # Test production build locally
 - Categorize assets (Lab, Sports, Furniture, etc.)
 
 ### Request & Approval Workflow
+
 - Faculty/staff request equipment or supplies
 - Set start/end dates for equipment reservations
 - Admin/staff approve, decline, or cancel requests
 - Automatic availability checks
 
 ### Release & Return (Staff Only)
+
 - QR/barcode scan to verify equipment
 - Release from approved request to requester
 - Accept returns with condition assessment
 - Update inventory quantities
 
 ### QR Code Scanning
+
 - Fast asset lookup via QR scan
 - View equipment details and availability
 - See pending release requests
 
 ### Damage & Concerns
+
 - Users report damage or issues
 - Attach photos and descriptions
 - Admin dashboard to review and resolve
 - Track resolution status
 
 ### Admin Dashboard & Reports
+
 - Request metrics (pending, approved, completed)
 - Equipment availability overview
 - Concern tracking and resolution
 - User activity logs
 
 ### Role-Based Access
-| Role | Permissions |
-|------|-------------|
-| **Admin** | All features; user management; reports; approval workflows |
-| **Staff** | Inventory viewing; release/return; QR scanning; concern reporting |
-| **Faculty** | Request equipment/supplies; view own requests; concern reporting |
-| **Outsider/LGU** | Limited supply requests; view own requests |
+
+| Role             | Permissions                                                       |
+| ---------------- | ----------------------------------------------------------------- |
+| **Admin**        | All features; user management; reports; approval workflows        |
+| **Staff**        | Inventory viewing; release/return; QR scanning; concern reporting |
+| **Faculty**      | Request equipment/supplies; view own requests; concern reporting  |
+| **Outsider/LGU** | Limited supply requests; view own requests                        |
 
 ---
 
 ## Deployment
 
 ### Vercel (Frontend)
+
 ```bash
 npm run build
 # Deploy dist/ to Vercel
@@ -225,23 +240,34 @@ npm run build
 The `vercel.json` file is pre-configured with SPA rewrite rules — all routes redirect to `index.html` for client-side routing.
 
 ### Backend (Heroku, DigitalOcean, AWS, etc.)
+
 1. Set `APP_ENV=production` and `APP_DEBUG=false` in `.env`
 2. Run migrations: `php artisan migrate --force`
 3. Generate optimized autoloader: `composer install --optimize-autoloader`
 4. Start with your server (e.g., `php artisan serve` or via your host's process manager)
+
+Realtime notifications require separate persistent `php artisan reverb:start`
+and `php artisan queue:work` services. Configure matching backend `REVERB_*`
+and frontend `VITE_REVERB_*` values, and allow the frontend origin in
+`FRONTEND_URLS`. The HTTP API container alone does not run these processes;
+when Reverb is unavailable, the client periodically refreshes notifications as
+a fallback.
 
 ---
 
 ## Testing
 
 ### Backend
+
 ```bash
 cd backend
 php artisan test
 ```
 
 ### Frontend
+
 No automated tests in the initial build, but you can add Jest/Vitest:
+
 ```bash
 npm install --save-dev vitest @testing-library/react @testing-library/jest-dom
 ```
@@ -253,6 +279,7 @@ npm install --save-dev vitest @testing-library/react @testing-library/jest-dom
 Auto-generated Scribe docs are available at `/api/documentation` once the backend is running.
 
 Key endpoints include:
+
 - `POST /api/auth/login` — User login
 - `GET /api/equipment` — List equipment
 - `POST /api/equipment-requests` — Request equipment
@@ -268,6 +295,7 @@ See `backend/routes/api.php` for the full route list.
 ## Configuration
 
 ### Backend `.env`
+
 ```env
 APP_NAME="School Inventory"
 APP_ENV=production
@@ -285,6 +313,7 @@ FRONTEND_URLS=https://your-frontend-domain.com
 ```
 
 ### Frontend `.env`
+
 ```env
 VITE_API_URL=http://localhost:8000/api
 ```
@@ -298,7 +327,9 @@ VITE_API_URL=http://localhost:8000/api
 **Root Cause**: The backend's `FRONTEND_URLS` environment variable is not set or is incorrectly configured.
 
 **Fix**:
+
 1. In your backend `.env` file, ensure `FRONTEND_URLS` is set to your frontend's public URL:
+
    ```env
    # For local development
    FRONTEND_URLS=http://localhost:5173
@@ -308,6 +339,7 @@ VITE_API_URL=http://localhost:8000/api
    ```
 
 2. Restart your backend server:
+
    ```bash
    php artisan serve  # or your deployment process
    ```
@@ -321,9 +353,11 @@ VITE_API_URL=http://localhost:8000/api
 ## Known Issues & Notes
 
 ### Backend
+
 - `QrCodeController::scan()` doesn't eager-load the `user` relation on pending release requests. The requester name shows a fallback until you add `->with('user')` to that query. Purely cosmetic.
 
 ### Frontend
+
 - Built in a sandboxed environment without outbound network access — the code was carefully reviewed (imports, hook dependencies, API keys) but please run `npm run build` locally before deploying to verify the build succeeds.
 - No automated tests in the initial release, but the codebase is test-ready.
 
