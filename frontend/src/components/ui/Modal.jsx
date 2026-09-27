@@ -20,20 +20,22 @@ export default function Modal({
 	const widthClass = { sm: 'max-w-sm', md: 'max-w-lg', lg: 'max-w-2xl' }[size];
 
 	return (
-		<div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+		<div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-3 sm:p-4">
 			<div
 				className="absolute inset-0 bg-slate-900/60"
 				onClick={onClose}
 				aria-hidden="true"
 			/>
 			<div
-				className={`relative z-10 w-full ${widthClass} rounded-2xl border border-[var(--border)] bg-[var(--surface-strong)] p-6 text-[var(--text)] shadow-soft`}
+				className={`relative z-10 my-auto max-h-[calc(100dvh-1.5rem)] w-full overflow-y-auto ${widthClass} rounded-2xl border border-[var(--border)] bg-[var(--surface-strong)] p-4 text-[var(--text)] shadow-soft sm:max-h-[calc(100dvh-2rem)] sm:p-6`}
 			>
-				<div className="mb-4 flex items-center justify-between gap-3">
-					<h3 className="text-lg font-semibold text-[var(--text)]">{title}</h3>
+				<div className="mb-4 flex items-start justify-between gap-3">
+					<h3 className="min-w-0 text-lg font-semibold text-[var(--text)]">
+						{title}
+					</h3>
 					<button
 						onClick={onClose}
-						className="rounded-md p-1.5 text-[var(--text-soft)] hover:bg-[var(--surface-muted)] hover:text-[var(--text)]"
+						className="shrink-0 rounded-md p-1.5 text-[var(--text-soft)] hover:bg-[var(--surface-muted)] hover:text-[var(--text)]"
 						aria-label="Close dialog"
 					>
 						<svg

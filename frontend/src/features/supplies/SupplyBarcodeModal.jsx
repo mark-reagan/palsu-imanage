@@ -136,15 +136,17 @@ export default function SupplyBarcodeModal({
 					</>
 				)}
 				{supply?.barcode && (
-					<div className="rounded-lg border border-slate-200 p-3">
+					<div className="min-w-0 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3">
 						<p className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-500">
 							Printable barcode
 						</p>
-						<BarcodeImage
-							value={supply.barcode}
-							label={`Barcode for ${supply.name}`}
-							svgRef={barcodeRef}
-						/>
+						<div className="max-w-full overflow-hidden">
+							<BarcodeImage
+								value={supply.barcode}
+								label={`Barcode for ${supply.name}`}
+								svgRef={barcodeRef}
+							/>
+						</div>
 						<Button
 							type="button"
 							variant="secondary"
@@ -158,13 +160,13 @@ export default function SupplyBarcodeModal({
 				)}
 				{scanEnabled && loading && <Spinner />}
 				{scanEnabled && result && (
-					<div className="space-y-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
+					<div className="space-y-4 rounded-lg border border-[var(--border)] bg-[var(--surface-muted)] p-4">
 						<div className="flex items-start justify-between gap-4">
 							<div>
-								<h2 className="font-semibold text-slate-900">
+								<h2 className="font-semibold text-[var(--text)]">
 									{result.supply.name}
 								</h2>
-								<p className="text-sm text-slate-500">
+								<p className="text-sm text-[var(--text-soft)]">
 									{result.supply.barcode}
 								</p>
 							</div>
@@ -172,14 +174,14 @@ export default function SupplyBarcodeModal({
 						</div>
 						<div className="grid grid-cols-2 gap-3 text-sm">
 							<div>
-								<p className="text-slate-500">Available stock</p>
-								<p className="font-semibold text-slate-900">
+								<p className="text-[var(--text-soft)]">Available stock</p>
+								<p className="font-semibold text-[var(--text)]">
 									{result.supply.stock_quantity} {result.supply.unit}
 								</p>
 							</div>
 							<div>
-								<p className="text-slate-500">Latest request</p>
-								<p className="font-semibold capitalize text-slate-900">
+								<p className="text-[var(--text-soft)]">Latest request</p>
+								<p className="font-semibold capitalize text-[var(--text)]">
 									{result.latest_request?.status || 'No requests'}
 								</p>
 							</div>
