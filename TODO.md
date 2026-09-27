@@ -91,14 +91,14 @@ Modernize the application UI and UX while keeping the existing role-based invent
 
 ## Phase 10: Validation and QA
 
-- [ ] Verify responsive behavior across mobile, tablet, and desktop
-- [ ] Test dark mode across all major pages
-- [ ] Test all request flows with multi-item selection
-- [ ] Test notifications modal/page behavior and sound triggers
-- [ ] Validate all confirmation dialogs and user actions
-- [ ] Verify role restrictions after UI and nav adjustments
-- [ ] Run frontend lint/build checks after implementation
-- [ ] Run relevant backend tests if API contracts or workflow endpoints change
+- [x] Verify responsive behavior across mobile, tablet, and desktop
+- [x] Test dark mode across all major pages
+- [x] Test all request flows with multi-item selection
+- [x] Test notifications modal/page behavior and sound triggers
+- [x] Validate all confirmation dialogs and user actions
+- [x] Verify role restrictions after UI and nav adjustments
+- [x] Run frontend lint/build checks after implementation
+- [x] Run relevant backend tests if API contracts or workflow endpoints change
 
 ## Implementation Notes
 
