@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Card from '../../components/ui/Card';
 import Pagination from '../../components/ui/Pagination';
@@ -8,10 +8,7 @@ import { useApiRequest } from '../../hooks/useApiRequest';
 import { formatDateTime } from '../../lib/format';
 import { notificationsApi } from './api';
 import { useOfflineMode } from '../../hooks/useOfflineMode';
-import {
-	getNotificationPath,
-	useNotificationSoundPreference,
-} from './notificationUtils';
+import { getNotificationPath, useNotificationSoundPreference } from './notificationUtils';
 
 export default function NotificationsPage() {
 	const navigate = useNavigate();
@@ -22,12 +19,19 @@ export default function NotificationsPage() {
 		(signal) => notificationsApi.list({ page }, signal),
 		[page],
 	);
+	const contentRef = useRef(null);
 
 	useEffect(() => {
 		window.addEventListener('app-notification-received', refetch);
 		return () =>
 			window.removeEventListener('app-notification-received', refetch);
 	}, [refetch]);
+
+	useEffect(() => {
+		if (!loading && contentRef.current) {
+			contentRef.current.focus();
+		}
+	}, [loading]);
 
 	async function handleOpen(notification) {
 		if (!notification.read_at && !isReadOnlyAdmin) {
@@ -52,7 +56,7 @@ export default function NotificationsPage() {
 	}
 
 	return (
-		<div className="space-y-4">
+		<div className="space-y-4" ref={contentRef}>
 			<div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
 				<div>
 					<h1 className="text-xl font-bold text-slate-900">Notifications</h1>
@@ -62,18 +66,21 @@ export default function NotificationsPage() {
 				</div>
 				<div className="flex items-center gap-2">
 					<button
-						className="btn-secondary btn-sm"
+						type="button"
+						className="btn-secondary btn-sm interactive-focus-sm"
 						onClick={toggleSound}
 						aria-pressed={soundEnabled}
 					>
 						Sound {soundEnabled ? 'on' : 'off'}
 					</button>
 					<button
-						className="btn-secondary btn-sm"
+						type="button"
+						className="btn-secondary btn-sm interactive-focus-sm"
 						onClick={handleMarkAll}
 						disabled={
 							isReadOnlyAdmin || loading || !data?.data?.some((n) => !n.read_at)
 						}
+						aria-label="Mark all notifications as read"
 					>
 						Mark all read
 					</button>
@@ -91,7 +98,10 @@ export default function NotificationsPage() {
 									<button
 										key={notification.id}
 										onClick={() => handleOpen(notification)}
-										className={`block w-full rounded-lg px-3 py-4 text-left transition-colors hover:bg-[var(--surface-muted)] ${notification.read_at ? 'bg-transparent' : 'bg-[var(--accent-soft)]'}`}
+										className={`block w-full rounded-lg px-3 py-4 text-left transition-colors hover:bg-[var(--surface-muted)] focus-visible:ring-2 focus-visible:ring-orange-300 focus-visible:ring-offset-2 interactive-focus ${
+											notification.read_at ? 'bg-transparent' : 'bg-[var(--accent-soft)]'
+										}`}
+										aria-label={`Notification: ${notification.data?.title || 'Notification'}`}
 									>
 										<div className="flex items-start justify-between gap-4">
 											<div>
@@ -118,14 +128,14 @@ export default function NotificationsPage() {
 													</p>
 												)}
 											</div>
-											<time className="shrink-0 text-xs text-[var(--text-soft)]">
+											<time className="shrink-0 text-xs text-[var(--text-soft)]" aria-label={`Created at ${formatDateTime(notification.created_at)}`}>
 												{formatDateTime(notification.created_at)}
 											</time>
 										</div>
 									</button>
 								))
 							) : (
-								<p className="py-10 text-center text-sm text-[var(--text-soft)]">
+								<p className="py-10 text-center text-sm text-[var(--text-soft)]" role="status" aria-live="polite">
 									No notifications yet.
 								</p>
 							)}

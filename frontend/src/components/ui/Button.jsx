@@ -16,7 +16,7 @@ export default function Button({
 
   return (
     <button
-      className={`${variantClass} ${sizeClass} ${className}`}
+      className={`${variantClass} ${sizeClass} ${className} interactive-focus`}
       disabled={disabled || loading}
       {...props}
     >

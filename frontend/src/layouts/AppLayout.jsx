@@ -12,7 +12,7 @@ import { useTheme } from '../app/useTheme';
 
 function SidebarLinks({ role, onNavigate, mobile = false }) {
 	return (
-		<nav className="flex-1 space-y-1 px-3 pt-2">
+		<nav className="flex-1 space-y-1 px-3 pt-2" role="navigation" aria-label="Main menu">
 			{NAV_ITEMS.filter((item) => !item.roles || item.roles.includes(role)).map(
 				(item) => (
 					<NavLink
@@ -21,7 +21,7 @@ function SidebarLinks({ role, onNavigate, mobile = false }) {
 						end={item.to === '/'}
 						onClick={onNavigate}
 						className={({ isActive }) =>
-							`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
+							`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 interactive-focus ${
 								isActive
 									? mobile
 										? 'bg-white/15 text-white shadow-sm ring-1 ring-white/20'
@@ -32,8 +32,8 @@ function SidebarLinks({ role, onNavigate, mobile = false }) {
 							}`
 						}
 					>
-						<Icon name={item.icon} className="h-5 w-5 shrink-0" />
-						{item.label}
+						<Icon name={item.icon} className="h-5 w-5 shrink-0" aria-hidden="true" />
+						<span>{item.label}</span>
 					</NavLink>
 				),
 			)}
@@ -170,13 +170,13 @@ export default function AppLayout() {
 			<div className="lg:pl-64">
 				<header className="sticky top-0 z-30 flex items-center justify-between border-b border-[var(--border)] bg-[var(--surface)]/80 px-4 py-3 backdrop-blur sm:px-6">
 					<button
-						className="rounded-lg p-2 text-[var(--text)] transition-transform hover:scale-105 lg:hidden"
+						className="rounded-lg p-2 text-[var(--text)] transition-transform hover:scale-105 lg:hidden interactive-focus-sm"
 						onClick={() => setMobileOpen(true)}
 						aria-label="Open menu"
 					>
 						<Icon name="menu" className="h-6 w-6" />
 					</button>
-					<span className="hidden text-sm font-medium capitalize text-[var(--text-soft)] lg:block">
+					<span className="hidden text-sm font-medium capitalize text-[var(--text-soft)] lg:block" aria-live="polite">
 						{user.role} portal
 					</span>
 					<div className="flex items-center gap-3">

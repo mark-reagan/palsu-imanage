@@ -29,6 +29,7 @@ export default function Badge({ status, children, className = '' }) {
 		<span
 			data-status={status || 'default'}
 			className={`theme-badge inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${style} ${className}`}
+			aria-label={label}
 		>
 			{label}
 		</span>

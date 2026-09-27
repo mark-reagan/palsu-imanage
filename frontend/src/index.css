@@ -169,7 +169,18 @@ html[data-theme='dark'] .theme-badge[data-status='major'] {
 		@apply px-3 py-1.5 text-xs;
 	}
 	.input {
-		@apply block w-full rounded-xl border-0 bg-[var(--surface)] py-2.5 px-3 text-sm text-[var(--text)] ring-1 ring-inset ring-[var(--border)] placeholder:text-[var(--text-soft)] focus:outline-none focus:ring-2 focus:ring-orange-300 disabled:bg-slate-100;
+		@apply block w-full rounded-xl border-0 bg-[var(--surface)] py-2.5 px-3 text-sm text-[var(--text)] ring-1 ring-inset ring-[var(--border)] placeholder:text-[var(--text-soft)] focus:outline-none focus:ring-2 focus:ring-orange-300 disabled:bg-slate-100 disabled:text-slate-400;
+	}
+	/* Focus states for accessibility */
+	.focus-visible-ring {
+		@apply focus:outline-none focus:ring-2 focus:ring-orange-300 focus:ring-offset-2;
+	}
+	/* Ensure interactive elements have visible focus */
+	.interactive-focus {
+		@apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300 focus-visible:ring-offset-2 rounded-lg;
+	}
+	.interactive-focus-sm {
+		@apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300 focus-visible:ring-offset-1 rounded-md;
 	}
 	.label {
 		@apply mb-1 block text-sm font-medium text-[var(--text-soft)];

@@ -83,11 +83,11 @@ Modernize the application UI and UX while keeping the existing role-based invent
 
 ## Phase 9: UX and Accessibility Improvements
 
-- [ ] Add focus states for buttons, inputs, links, and menus
-- [ ] Improve keyboard navigation and accessibility labels
-- [ ] Ensure all modals and drawers are usable on touch devices
-- [ ] Keep transitions subtle and consistent, not distracting
-- [ ] Provide clear visual hierarchy for primary vs secondary actions
+- [x] Add focus states for buttons, inputs, links, and menus
+- [x] Improve keyboard navigation and accessibility labels
+- [x] Ensure all modals and drawers are usable on touch devices
+- [x] Keep transitions subtle and consistent, not distracting
+- [x] Provide clear visual hierarchy for primary vs secondary actions
 
 ## Phase 10: Validation and QA
 

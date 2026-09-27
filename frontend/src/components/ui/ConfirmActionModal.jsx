@@ -38,9 +38,11 @@ export default function ConfirmActionModal({
 	return (
 		<Modal open={open} onClose={handleClose} title={title} size="sm">
 			<div className="space-y-4">
-				<p className="text-sm leading-6 text-[var(--text-soft)]">{message}</p>
+				<p className="text-sm leading-6 text-[var(--text-soft)]" id="modal-description">
+					{message}
+				</p>
 				<ErrorAlert error={error} />
-				<div className="flex justify-end gap-2">
+				<div className="flex justify-end gap-2" aria-describedby="modal-description">
 					<Button
 						type="button"
 						variant="secondary"

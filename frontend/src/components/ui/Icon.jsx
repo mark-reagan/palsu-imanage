@@ -35,7 +35,7 @@ export default function Icon({ name, className = 'h-5 w-5', style }) {
 	if (!d) return null;
 	return (
 		<svg
-			className={className}
+			className={`${className} shrink-0`}
 			style={style}
 			fill="none"
 			viewBox="0 0 24 24"

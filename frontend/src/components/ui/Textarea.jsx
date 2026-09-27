@@ -1,5 +1,7 @@
-export default function Textarea({ label, error, id, className = '', rows = 3, ...props }) {
-  const inputId = id || props.name
+import { forwardRef } from 'react';
+
+const Textarea = forwardRef(function Textarea({ label, error, id, className = '', rows = 3, ...props }, ref) {
+  const inputId = id || props.name;
   return (
     <div>
       {label && (
@@ -7,8 +9,16 @@ export default function Textarea({ label, error, id, className = '', rows = 3, .
           {label}
         </label>
       )}
-      <textarea id={inputId} rows={rows} className={`input ${error ? 'ring-red-400' : ''} ${className}`} {...props} />
-      {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
+      <textarea
+        ref={ref}
+        id={inputId}
+        rows={rows}
+        className={`input ${error ? 'ring-red-400' : ''} ${className} interactive-focus`}
+        {...props}
+      />
+      {error && <p className="mt-1 text-xs text-red-600" role="alert">{error}</p>}
     </div>
-  )
-}
+  );
+});
+
+export default Textarea;

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
@@ -12,6 +12,14 @@ export default function LoginPage() {
 	const [form, setForm] = useState({ email: '', password: '' });
 	const [error, setError] = useState(null);
 	const [loading, setLoading] = useState(false);
+	const emailInputRef = useRef(null);
+
+	// Focus email input on mount
+	useEffect(() => {
+		if (emailInputRef.current) {
+			emailInputRef.current.focus();
+		}
+	}, []);
 
 	const from = location.state?.from?.pathname || '/';
 
