@@ -22,6 +22,7 @@ export default function BarcodeImage({ value, label, svgRef }) {
 	return (
 		<svg
 			ref={svgRef || localRef}
+			className="block h-auto w-full max-w-full"
 			role="img"
 			aria-label={label || `Barcode ${value}`}
 		/>
