@@ -2,7 +2,6 @@ import { useState } from 'react';
 import Modal from './Modal';
 import Textarea from './Textarea';
 import Button from './Button';
-import ErrorAlert from './ErrorAlert';
 import ConfirmActionModal from './ConfirmActionModal';
 
 export default function DeclineReasonModal({
@@ -13,14 +12,12 @@ export default function DeclineReasonModal({
 	disabled = false,
 }) {
 	const [reason, setReason] = useState('');
-	const [error, setError] = useState(null);
 	const [loading, setLoading] = useState(false);
 	const [confirming, setConfirming] = useState(false);
 
 	function handleSubmit(e) {
 		e.preventDefault();
 		if (disabled) return;
-		setError(null);
 		setConfirming(true);
 	}
 
@@ -31,8 +28,6 @@ export default function DeclineReasonModal({
 			setReason('');
 			setConfirming(false);
 			onClose();
-		} catch (err) {
-			setError(err);
 		} finally {
 			setLoading(false);
 		}
@@ -54,7 +49,6 @@ export default function DeclineReasonModal({
 						onChange={(e) => setReason(e.target.value)}
 						placeholder="Let the requester know why this was declined…"
 					/>
-					<ErrorAlert error={error} />
 					<div className="flex justify-end gap-2">
 						<Button type="button" variant="secondary" onClick={onClose}>
 							Cancel

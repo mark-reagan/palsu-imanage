@@ -7,8 +7,6 @@ import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
 import Spinner from '../../components/ui/Spinner';
-import ErrorAlert from '../../components/ui/ErrorAlert';
-import SuccessAlert from '../../components/ui/SuccessAlert';
 import ConfirmActionModal from '../../components/ui/ConfirmActionModal';
 import Icon from '../../components/ui/Icon';
 import { useApiRequest } from '../../hooks/useApiRequest';
@@ -19,6 +17,7 @@ import EquipmentFormModal from './EquipmentFormModal';
 import EquipmentBarcodeModal from './EquipmentBarcodeModal';
 import NewEquipmentRequestModal from '../equipment-requests/NewEquipmentRequestModal';
 import { useOfflineMode } from '../../hooks/useOfflineMode';
+import { dispatchSuccess } from '../../lib/toast';
 
 export default function EquipmentListPage() {
 	const { user } = useAuth();
@@ -33,8 +32,6 @@ export default function EquipmentListPage() {
 	const [requestTarget, setRequestTarget] = useState(null);
 	const [requestDialogOpen, setRequestDialogOpen] = useState(false);
 	const [requestItems, setRequestItems] = useState([]);
-	const [actionError, setActionError] = useState(null);
-	const [successMessage, setSuccessMessage] = useState('');
 	const [confirmTarget, setConfirmTarget] = useState(null);
 
 	const { data, error, loading, refetch } = useApiRequest(
@@ -62,7 +59,6 @@ export default function EquipmentListPage() {
 
 	async function handleRemove(equipment) {
 		if (isReadOnlyAdmin) return;
-		setActionError(null);
 		setConfirmTarget({ type: 'delete-equipment', item: equipment });
 	}
 
@@ -192,7 +188,6 @@ export default function EquipmentListPage() {
 			</div>
 
 			<Card>
-				<SuccessAlert message={successMessage} className="mb-4" />
 				<div className="mb-4 grid grid-cols-1 items-end gap-3 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)]">
 					<Input
 						className="h-9"
@@ -232,9 +227,6 @@ export default function EquipmentListPage() {
 				</div>
 
 				{loading && <Spinner />}
-				<SuccessAlert message={successMessage} className="mb-3" />
-				<ErrorAlert error={actionError} />
-				<ErrorAlert error={error} />
 				{!loading && !error && (
 					<>
 						<Table
@@ -251,11 +243,8 @@ export default function EquipmentListPage() {
 				open={formOpen}
 				onClose={() => setFormOpen(false)}
 				equipment={editing}
-				onSaved={(saved) => {
+				onSaved={() => {
 					refetch();
-					setSuccessMessage(
-						`${saved?.name || 'Equipment'} ${editing ? 'updated' : 'added'} successfully.`,
-					);
 				}}
 			/>
 			<ConfirmActionModal
@@ -278,20 +267,17 @@ export default function EquipmentListPage() {
 				}
 				variant="danger"
 				onConfirm={async () => {
-					try {
-						if (confirmTarget.type === 'delete-equipment') {
-							await equipmentApi.remove(confirmTarget.item.id);
-							setSuccessMessage(`${confirmTarget.item.name} deleted.`);
-						} else {
-							await equipmentApi.deactivate(confirmTarget.item.id);
-							setSuccessMessage(`${confirmTarget.item.name} deactivated.`);
-						}
-						refetch();
-						setConfirmTarget(null);
-					} catch (err) {
-						setActionError(err);
-						throw err;
+					let message;
+					if (confirmTarget.type === 'delete-equipment') {
+						await equipmentApi.remove(confirmTarget.item.id);
+						message = `${confirmTarget.item.name} deleted.`;
+					} else {
+						await equipmentApi.deactivate(confirmTarget.item.id);
+						message = `${confirmTarget.item.name} deactivated.`;
 					}
+					dispatchSuccess(message);
+					refetch();
+					setConfirmTarget(null);
 				}}
 			/>
 			{barcodeTarget && (

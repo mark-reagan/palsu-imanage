@@ -8,7 +8,6 @@ import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
 import Spinner from '../../components/ui/Spinner';
 import ErrorAlert from '../../components/ui/ErrorAlert';
-import SuccessAlert from '../../components/ui/SuccessAlert';
 import ConfirmActionModal from '../../components/ui/ConfirmActionModal';
 import Icon from '../../components/ui/Icon';
 import { useApiRequest } from '../../hooks/useApiRequest';
@@ -16,6 +15,7 @@ import { useAuth } from '../auth/useAuth';
 import { usersApi } from './api';
 import UserFormModal from './UserFormModal';
 import { useOfflineMode } from '../../hooks/useOfflineMode';
+import { dispatchSuccess } from '../../lib/toast';
 
 export default function UsersPage() {
 	const { user: currentUser } = useAuth();
@@ -25,8 +25,6 @@ export default function UsersPage() {
 	const [role, setRole] = useState('');
 	const [formOpen, setFormOpen] = useState(false);
 	const [editing, setEditing] = useState(null);
-	const [actionError, setActionError] = useState(null);
-	const [successMessage, setSuccessMessage] = useState('');
 	const [confirmTarget, setConfirmTarget] = useState(null);
 
 	const { data, error, loading, refetch } = useApiRequest(
@@ -36,7 +34,6 @@ export default function UsersPage() {
 
 	async function handleToggleActive(u) {
 		if (isReadOnlyAdmin) return;
-		setActionError(null);
 		setConfirmTarget({
 			type: u.is_active ? 'deactivate' : 'activate',
 			user: u,
@@ -139,7 +136,6 @@ export default function UsersPage() {
 			</div>
 
 			<Card>
-				<SuccessAlert message={successMessage} className="mb-4" />
 				<div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
 					<Input
 						placeholder="Search by name or email"
@@ -164,7 +160,6 @@ export default function UsersPage() {
 					</Select>
 				</div>
 
-				<ErrorAlert error={actionError} className="mb-4" />
 				{loading && <Spinner />}
 				<ErrorAlert error={error} />
 				{!loading && !error && (
@@ -185,9 +180,6 @@ export default function UsersPage() {
 				user={editing}
 				onSaved={() => {
 					refetch();
-					setSuccessMessage(
-						`${editing ? 'User updated' : 'User created'} successfully.`,
-					);
 				}}
 			/>
 			<ConfirmActionModal
@@ -216,20 +208,10 @@ export default function UsersPage() {
 					if (type === 'delete') await usersApi.remove(target.id);
 					else if (type === 'activate') await usersApi.activate(target.id);
 					else await usersApi.deactivate(target.id);
-					setSuccessMessage(
+					dispatchSuccess(
 						type === 'delete'
 							? `${target.name} deleted.`
 							: `${target.name} ${type === 'activate' ? 'activated' : 'deactivated'}.`,
-					);
-					window.dispatchEvent(
-						new CustomEvent('app-success', {
-							detail: {
-								message:
-									type === 'delete'
-										? `${target.name} deleted.`
-										: `${target.name} ${type === 'activate' ? 'activated' : 'deactivated'}.`,
-							},
-						}),
 					);
 					refetch();
 					setConfirmTarget(null);

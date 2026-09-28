@@ -7,6 +7,7 @@ import ErrorAlert from '../../components/ui/ErrorAlert';
 import ConfirmActionModal from '../../components/ui/ConfirmActionModal';
 import { suppliesApi } from './api';
 import { useOfflineMode } from '../../hooks/useOfflineMode';
+import { dispatchSuccess } from '../../lib/toast';
 
 const EMPTY = {
 	name: '',
@@ -67,20 +68,11 @@ function SupplyFormModalContent({ open, onClose, onSaved, supply }) {
 				? await suppliesApi.update(supply.id, pendingPayload)
 				: await suppliesApi.create(pendingPayload);
 			onSaved(saved);
-			window.dispatchEvent(
-				new CustomEvent('app-success', {
-					detail: {
-						message: isEdit
-							? 'Supply updated successfully.'
-							: 'Supply added successfully.',
-					},
-				}),
+			dispatchSuccess(
+				isEdit ? 'Supply updated successfully.' : 'Supply added successfully.',
 			);
 			setConfirmOpen(false);
 			onClose();
-		} catch (err) {
-			setError(err);
-			throw err;
 		} finally {
 			setLoading(false);
 		}

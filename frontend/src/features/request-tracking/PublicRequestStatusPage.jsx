@@ -5,7 +5,6 @@ import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
 import DeclineReasonModal from '../../components/ui/DeclineReasonModal';
 import ErrorAlert from '../../components/ui/ErrorAlert';
-import SuccessAlert from '../../components/ui/SuccessAlert';
 import ConfirmActionModal from '../../components/ui/ConfirmActionModal';
 import ReturnEquipmentModal from '../release-return/ReturnEquipmentModal';
 import { useAuth } from '../auth/useAuth';
@@ -17,14 +16,13 @@ import { releaseReturnApi } from '../release-return/api';
 import { requestTrackingApi } from './api';
 import { useApiRequest } from '../../hooks/useApiRequest';
 import { useOfflineMode } from '../../hooks/useOfflineMode';
+import { dispatchError, dispatchSuccess } from '../../lib/toast';
 
 export default function PublicRequestStatusPage() {
 	const { trackingToken } = useParams();
 	const navigate = useNavigate();
 	const { user } = useAuth();
 	const { isReadOnlyAdmin } = useOfflineMode();
-	const [actionError, setActionError] = useState(null);
-	const [successMessage, setSuccessMessage] = useState('');
 	const [confirmAction, setConfirmAction] = useState(null);
 	const [declineOpen, setDeclineOpen] = useState(false);
 	const [returnOpen, setReturnOpen] = useState(false);
@@ -71,7 +69,6 @@ export default function PublicRequestStatusPage() {
 
 	async function downloadQr() {
 		setDownloading(true);
-		setActionError(null);
 		try {
 			const response = await fetch(request.qr_url);
 			if (!response.ok) throw new Error('Unable to download the QR code.');
@@ -86,7 +83,7 @@ export default function PublicRequestStatusPage() {
 			link.remove();
 			URL.revokeObjectURL(url);
 		} catch (downloadError) {
-			setActionError({ message: downloadError.message });
+			dispatchError(downloadError);
 		} finally {
 			setDownloading(false);
 		}
@@ -94,16 +91,9 @@ export default function PublicRequestStatusPage() {
 
 	async function refreshAfterAction(action) {
 		if (isReadOnlyAdmin) return;
-		setActionError(null);
-		setSuccessMessage('');
-		try {
-			await action();
-			await refetch();
-			setDeclineOpen(false);
-		} catch (requestError) {
-			setActionError(requestError);
-			throw requestError;
-		}
+		await action();
+		await refetch();
+		setDeclineOpen(false);
 	}
 
 	const transactionId = request.transaction?.id;
@@ -348,8 +338,6 @@ export default function PublicRequestStatusPage() {
 								</Button>
 							)}
 					</div>
-					<ErrorAlert error={actionError} className="mt-4" />
-					<SuccessAlert message={successMessage} className="mt-4" />
 				</Card>
 			)}
 
@@ -377,7 +365,7 @@ export default function PublicRequestStatusPage() {
 						} else {
 							await supplyRequestsApi.decline(request.id, reason);
 						}
-						setSuccessMessage('Request declined successfully.');
+						dispatchSuccess('Request declined successfully.');
 					})
 				}
 			/>
@@ -401,13 +389,13 @@ export default function PublicRequestStatusPage() {
 							await (isEquipment
 								? equipmentRequestsApi.approve(request.id)
 								: supplyRequestsApi.approve(request.id));
-							setSuccessMessage('Request approved successfully.');
+							dispatchSuccess('Request approved successfully.');
 							return;
 						}
 						await (isEquipment
 							? releaseReturnApi.releaseEquipment(request.id)
 							: releaseReturnApi.releaseSupply(request.id));
-						setSuccessMessage('Request released successfully.');
+						dispatchSuccess('Request released successfully.');
 					});
 					setConfirmAction(null);
 				}}
@@ -422,7 +410,6 @@ export default function PublicRequestStatusPage() {
 					onSaved={async () => {
 						setReturnOpen(false);
 						refetch();
-						setSuccessMessage('Equipment return recorded successfully.');
 					}}
 				/>
 			)}

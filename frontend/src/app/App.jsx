@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import ErrorBoundary from '../components/ui/ErrorBoundary';
+import ToastViewport from '../components/ui/ToastViewport';
 import { AuthProvider } from '../features/auth/AuthContext';
 import AppRoutes from './routes';
 import { ThemeProvider } from './themeContext';
@@ -59,6 +60,7 @@ export default function App() {
 					<AuthProvider>
 						<AppRoutes />
 					</AuthProvider>
+					<ToastViewport />
 				</BrowserRouter>
 			</ErrorBoundary>
 		</ThemeProvider>

@@ -7,6 +7,7 @@ import ErrorAlert from '../../components/ui/ErrorAlert';
 import ConfirmActionModal from '../../components/ui/ConfirmActionModal';
 import { usersApi } from './api';
 import { useOfflineMode } from '../../hooks/useOfflineMode';
+import { dispatchSuccess } from '../../lib/toast';
 
 const EMPTY = {
 	name: '',
@@ -77,20 +78,13 @@ function UserFormModalContent({ open, onClose, onSaved, user }) {
 				? await usersApi.update(user.id, pendingPayload)
 				: await usersApi.create(pendingPayload);
 			onSaved(saved);
-			window.dispatchEvent(
-				new CustomEvent('app-success', {
-					detail: {
-						message: isEdit
-							? 'User updated successfully.'
-							: 'User account created successfully.',
-					},
-				}),
+			dispatchSuccess(
+				isEdit
+					? 'User updated successfully.'
+					: 'User account created successfully.',
 			);
 			setConfirmOpen(false);
 			onClose();
-		} catch (err) {
-			setError(err);
-			throw err;
 		} finally {
 			setLoading(false);
 		}

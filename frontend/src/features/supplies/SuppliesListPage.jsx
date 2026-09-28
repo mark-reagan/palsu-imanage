@@ -5,14 +5,13 @@ import Pagination from '../../components/ui/Pagination';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import Spinner from '../../components/ui/Spinner';
-import ErrorAlert from '../../components/ui/ErrorAlert';
-import SuccessAlert from '../../components/ui/SuccessAlert';
 import ConfirmActionModal from '../../components/ui/ConfirmActionModal';
 import Icon from '../../components/ui/Icon';
 import { useApiRequest } from '../../hooks/useApiRequest';
 import { useAuth } from '../auth/useAuth';
 import { ROLES } from '../../lib/constants';
 import { suppliesApi } from './api';
+import { dispatchSuccess } from '../../lib/toast';
 import SupplyFormModal from './SupplyFormModal';
 import NewSupplyRequestModal from '../supply-requests/NewSupplyRequestModal';
 import SupplyBarcodeModal from './SupplyBarcodeModal';
@@ -30,8 +29,6 @@ export default function SuppliesListPage() {
 	const [requestItems, setRequestItems] = useState([]);
 	const [barcodeTarget, setBarcodeTarget] = useState(null);
 	const [scannerOpen, setScannerOpen] = useState(false);
-	const [actionError, setActionError] = useState(null);
-	const [successMessage, setSuccessMessage] = useState('');
 	const [confirmTarget, setConfirmTarget] = useState(null);
 
 	const { data, error, loading, refetch } = useApiRequest(
@@ -58,7 +55,6 @@ export default function SuppliesListPage() {
 
 	async function handleRemove(supply) {
 		if (isReadOnlyAdmin) return;
-		setActionError(null);
 		setConfirmTarget({ type: 'delete-supply', item: supply });
 	}
 
@@ -188,7 +184,6 @@ export default function SuppliesListPage() {
 			</div>
 
 			<Card>
-				<SuccessAlert message={successMessage} className="mb-4" />
 				<div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end">
 					<Input
 						label="Search by name or supply code"
@@ -212,9 +207,6 @@ export default function SuppliesListPage() {
 				</div>
 
 				{loading && <Spinner />}
-				<ErrorAlert error={actionError} />
-				<SuccessAlert message={successMessage} className="mb-3" />
-				<ErrorAlert error={error} />
 				{!loading && !error && (
 					<>
 						<Table
@@ -231,11 +223,8 @@ export default function SuppliesListPage() {
 				open={formOpen}
 				onClose={() => setFormOpen(false)}
 				supply={editing}
-				onSaved={(saved) => {
+				onSaved={() => {
 					refetch();
-					setSuccessMessage(
-						`${saved?.name || 'Supply'} ${editing ? 'updated' : 'added'} successfully.`,
-					);
 				}}
 			/>
 			<ConfirmActionModal
@@ -258,20 +247,15 @@ export default function SuppliesListPage() {
 				}
 				variant="danger"
 				onConfirm={async () => {
-					try {
-						if (confirmTarget.type === 'delete-supply') {
-							await suppliesApi.remove(confirmTarget.item.id);
-							setSuccessMessage(`${confirmTarget.item.name} deleted.`);
-						} else {
-							await suppliesApi.deactivate(confirmTarget.item.id);
-							setSuccessMessage(`${confirmTarget.item.name} deactivated.`);
-						}
-						refetch();
-						setConfirmTarget(null);
-					} catch (err) {
-						setActionError(err);
-						throw err;
+					if (confirmTarget.type === 'delete-supply') {
+						await suppliesApi.remove(confirmTarget.item.id);
+						dispatchSuccess(`${confirmTarget.item.name} deleted.`);
+					} else {
+						await suppliesApi.deactivate(confirmTarget.item.id);
+						dispatchSuccess(`${confirmTarget.item.name} deactivated.`);
 					}
+					refetch();
+					setConfirmTarget(null);
 				}}
 			/>
 			<NewSupplyRequestModal

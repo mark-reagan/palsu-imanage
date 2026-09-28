@@ -9,6 +9,7 @@ import ConfirmActionModal from '../../components/ui/ConfirmActionModal';
 import { EQUIPMENT_CONDITIONS } from '../../lib/constants';
 import { equipmentApi } from './api';
 import { useOfflineMode } from '../../hooks/useOfflineMode';
+import { dispatchSuccess } from '../../lib/toast';
 
 const EMPTY = {
 	name: '',
@@ -66,20 +67,13 @@ function EquipmentFormModalContent({ open, onClose, onSaved, equipment }) {
 				? await equipmentApi.update(equipment.id, pendingPayload)
 				: await equipmentApi.create(pendingPayload);
 			onSaved(saved);
-			window.dispatchEvent(
-				new CustomEvent('app-success', {
-					detail: {
-						message: isEdit
-							? 'Equipment updated successfully.'
-							: 'Equipment added successfully.',
-					},
-				}),
+			dispatchSuccess(
+				isEdit
+					? 'Equipment updated successfully.'
+					: 'Equipment added successfully.',
 			);
 			setConfirmOpen(false);
 			onClose();
-		} catch (err) {
-			setError(err);
-			throw err;
 		} finally {
 			setLoading(false);
 		}

@@ -8,6 +8,7 @@ import ConfirmActionModal from '../../components/ui/ConfirmActionModal';
 import { EQUIPMENT_CONDITIONS } from '../../lib/constants';
 import { concernsApi } from './api';
 import { useOfflineMode } from '../../hooks/useOfflineMode';
+import { dispatchSuccess } from '../../lib/toast';
 
 export default function ReviewConcernModal({
 	open,
@@ -33,21 +34,12 @@ export default function ReviewConcernModal({
 
 	async function confirmReview() {
 		setError(null);
-		try {
-			const payload = { ...form };
-			if (!payload.update_condition) delete payload.update_condition;
-			await concernsApi.review(concern.id, payload);
-			onSaved?.();
-			window.dispatchEvent(
-				new CustomEvent('app-success', {
-					detail: { message: 'Concern review saved successfully.' },
-				}),
-			);
-			onClose();
-		} catch (err) {
-			setError(err);
-			throw err;
-		}
+		const payload = { ...form };
+		if (!payload.update_condition) delete payload.update_condition;
+		await concernsApi.review(concern.id, payload);
+		onSaved?.();
+		dispatchSuccess('Concern review saved successfully.');
+		onClose();
 	}
 
 	return (

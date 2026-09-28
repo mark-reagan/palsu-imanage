@@ -4,7 +4,6 @@ import Table from '../../components/ui/Table';
 import Pagination from '../../components/ui/Pagination';
 import Spinner from '../../components/ui/Spinner';
 import ErrorAlert from '../../components/ui/ErrorAlert';
-import SuccessAlert from '../../components/ui/SuccessAlert';
 import ConfirmActionModal from '../../components/ui/ConfirmActionModal';
 import { useApiRequest } from '../../hooks/useApiRequest';
 import { formatDate } from '../../lib/format';
@@ -12,6 +11,7 @@ import { equipmentRequestsApi } from '../equipment-requests/api';
 import { supplyRequestsApi } from '../supply-requests/api';
 import { releaseReturnApi } from './api';
 import ReturnEquipmentModal from './ReturnEquipmentModal';
+import { dispatchError, dispatchSuccess } from '../../lib/toast';
 
 const TABS = [
 	{ key: 'release-equipment', label: 'Release Equipment' },
@@ -22,8 +22,6 @@ const TABS = [
 export default function ReleaseReturnPage() {
 	const [tab, setTab] = useState('release-equipment');
 	const [page, setPage] = useState(1);
-	const [actionError, setActionError] = useState(null);
-	const [successMessage, setSuccessMessage] = useState('');
 	const [confirmTarget, setConfirmTarget] = useState(null);
 	const [returnTarget, setReturnTarget] = useState(null);
 
@@ -44,50 +42,31 @@ export default function ReleaseReturnPage() {
 	function switchTab(next) {
 		setTab(next);
 		setPage(1);
-		setActionError(null);
-		setSuccessMessage('');
 	}
 
 	async function handleReleaseEquipment(id) {
-		setActionError(null);
-		setSuccessMessage('');
-		try {
-			await releaseReturnApi.releaseEquipment(id);
-			equipmentRequests.refetch();
-			setSuccessMessage('Equipment released successfully.');
-		} catch (err) {
-			setActionError(err);
-			throw err;
-		}
+		await releaseReturnApi.releaseEquipment(id);
+		equipmentRequests.refetch();
+		dispatchSuccess('Equipment released successfully.');
 	}
 
 	async function handleReleaseSupply(id) {
-		setActionError(null);
-		setSuccessMessage('');
-		try {
-			await releaseReturnApi.releaseSupply(id);
-			supplyRequests.refetch();
-			setSuccessMessage('Supplies released successfully.');
-		} catch (err) {
-			setActionError(err);
-			throw err;
-		}
+		await releaseReturnApi.releaseSupply(id);
+		supplyRequests.refetch();
+		dispatchSuccess('Supplies released successfully.');
 	}
 
 	async function openReturnModal(request) {
-		setActionError(null);
 		try {
 			const response = await equipmentRequestsApi.get(request.id);
 			const full = response?.data ?? response;
 			if (!full.transaction) {
-				setActionError({
-					message: 'No active transaction found for this request.',
-				});
+				dispatchError('No active transaction found for this request.');
 				return;
 			}
 			setReturnTarget({ request: full, transactionId: full.transaction.id });
 		} catch (err) {
-			setActionError(err);
+			dispatchError(err);
 		}
 	}
 
@@ -230,8 +209,6 @@ export default function ReleaseReturnPage() {
 			</div>
 
 			<Card>
-				<SuccessAlert message={successMessage} className="mb-4" />
-				<ErrorAlert error={actionError} className="mb-4" />
 				{activeRequest.loading && <Spinner />}
 				<ErrorAlert error={activeRequest.error} />
 				{!activeRequest.loading && !activeRequest.error && (
@@ -259,7 +236,6 @@ export default function ReleaseReturnPage() {
 				transactionId={returnTarget?.transactionId}
 				onSaved={() => {
 					equipmentRequests.refetch();
-					setSuccessMessage('Equipment return recorded successfully.');
 				}}
 			/>
 			<ConfirmActionModal

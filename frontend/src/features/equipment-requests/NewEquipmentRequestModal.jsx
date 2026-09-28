@@ -5,6 +5,7 @@ import Textarea from '../../components/ui/Textarea';
 import Button from '../../components/ui/Button';
 import ErrorAlert from '../../components/ui/ErrorAlert';
 import { equipmentRequestsApi } from './api';
+import { dispatchError, dispatchSuccess } from '../../lib/toast';
 
 const EMPTY = { quantity: 1, purpose: '', start_date: '', end_date: '' };
 
@@ -100,10 +101,11 @@ function NewEquipmentRequestModalContent({
 					};
 
 			await equipmentRequestsApi.create(payload);
+			dispatchSuccess('Equipment request submitted successfully.');
 			onSaved?.();
 			onClose();
 		} catch (err) {
-			setError(err);
+			dispatchError(err);
 		} finally {
 			setLoading(false);
 		}

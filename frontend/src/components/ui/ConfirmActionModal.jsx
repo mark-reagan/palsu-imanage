@@ -2,7 +2,7 @@ import { useState } from 'react';
 import PropTypes from 'prop-types';
 import Modal from './Modal';
 import Button from './Button';
-import ErrorAlert from './ErrorAlert';
+import { dispatchError } from '../../lib/toast';
 
 export default function ConfirmActionModal({
 	open,
@@ -14,16 +14,14 @@ export default function ConfirmActionModal({
 	variant = 'primary',
 }) {
 	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState(null);
 
 	async function handleConfirm() {
 		setLoading(true);
-		setError(null);
 		try {
 			await onConfirm();
 			onClose();
 		} catch (actionError) {
-			setError(actionError);
+			dispatchError(actionError);
 		} finally {
 			setLoading(false);
 		}
@@ -31,18 +29,22 @@ export default function ConfirmActionModal({
 
 	function handleClose() {
 		if (loading) return;
-		setError(null);
 		onClose();
 	}
 
 	return (
 		<Modal open={open} onClose={handleClose} title={title} size="sm">
 			<div className="space-y-4">
-				<p className="text-sm leading-6 text-[var(--text-soft)]" id="modal-description">
+				<p
+					className="text-sm leading-6 text-[var(--text-soft)]"
+					id="modal-description"
+				>
 					{message}
 				</p>
-				<ErrorAlert error={error} />
-				<div className="flex justify-end gap-2" aria-describedby="modal-description">
+				<div
+					className="flex justify-end gap-2"
+					aria-describedby="modal-description"
+				>
 					<Button
 						type="button"
 						variant="secondary"

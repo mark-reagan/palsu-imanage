@@ -7,6 +7,7 @@ import ErrorAlert from '../../components/ui/ErrorAlert';
 import ConfirmActionModal from '../../components/ui/ConfirmActionModal';
 import { EQUIPMENT_CONDITIONS } from '../../lib/constants';
 import { releaseReturnApi } from './api';
+import { dispatchSuccess } from '../../lib/toast';
 
 export default function ReturnEquipmentModal({
 	open,
@@ -34,10 +35,8 @@ export default function ReturnEquipmentModal({
 		try {
 			await releaseReturnApi.returnEquipment(transactionId, form);
 			onSaved?.();
+			dispatchSuccess('Equipment return recorded successfully.');
 			onClose();
-		} catch (err) {
-			setError(err);
-			throw err;
 		} finally {
 			setLoading(false);
 		}

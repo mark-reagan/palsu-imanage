@@ -5,6 +5,7 @@ import Textarea from '../../components/ui/Textarea';
 import Button from '../../components/ui/Button';
 import ErrorAlert from '../../components/ui/ErrorAlert';
 import { supplyRequestsApi } from './api';
+import { dispatchError, dispatchSuccess } from '../../lib/toast';
 
 const EMPTY = { quantity: 1, purpose: '' };
 
@@ -35,8 +36,8 @@ function NewSupplyRequestModalContent({
 			(items || []).map((item) => ({
 				supply_id: item.id,
 				name: item.name,
-				stock_quantity: item.stock_quantity,
 				unit: item.unit,
+				stock_quantity: item.stock_quantity,
 				quantity: 1,
 				purpose: '',
 			})),
@@ -82,10 +83,11 @@ function NewSupplyRequestModalContent({
 					};
 
 			await supplyRequestsApi.create(payload);
+			dispatchSuccess('Supply request submitted successfully.');
 			onSaved?.();
 			onClose();
 		} catch (err) {
-			setError(err);
+			dispatchError(err);
 		} finally {
 			setLoading(false);
 		}

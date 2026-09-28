@@ -8,11 +8,11 @@ import Spinner from '../../components/ui/Spinner';
 import ErrorAlert from '../../components/ui/ErrorAlert';
 import DeclineReasonModal from '../../components/ui/DeclineReasonModal';
 import ConfirmActionModal from '../../components/ui/ConfirmActionModal';
-import SuccessAlert from '../../components/ui/SuccessAlert';
 import { useApiRequest } from '../../hooks/useApiRequest';
 import { useAuth } from '../auth/useAuth';
 import { ROLES } from '../../lib/constants';
 import { formatDate } from '../../lib/format';
+import { dispatchSuccess } from '../../lib/toast';
 import { equipmentRequestsApi } from './api';
 import { useOfflineMode } from '../../hooks/useOfflineMode';
 
@@ -24,8 +24,6 @@ export default function EquipmentRequestsPage() {
 	const [declineTarget, setDeclineTarget] = useState(null);
 	const [approveTarget, setApproveTarget] = useState(null);
 	const [cancelTarget, setCancelTarget] = useState(null);
-	const [actionError, setActionError] = useState(null);
-	const [successMessage, setSuccessMessage] = useState('');
 
 	const { data, error, loading, refetch } = useApiRequest(
 		(signal) => equipmentRequestsApi.list({ page, status }, signal),
@@ -37,7 +35,6 @@ export default function EquipmentRequestsPage() {
 		user.role === ROLES.FACULTY || user.role === ROLES.OUTSIDER;
 
 	async function handleCancel(id) {
-		setActionError(null);
 		setCancelTarget(data?.data?.find((request) => request.id === id) || { id });
 	}
 
@@ -161,8 +158,6 @@ export default function EquipmentRequestsPage() {
 					</Select>
 				</div>
 
-				<ErrorAlert error={actionError} className="mb-4" />
-				<SuccessAlert message={successMessage} className="mb-4" />
 				{loading && <Spinner />}
 				<ErrorAlert error={error} />
 				{!loading && !error && (
@@ -186,7 +181,7 @@ export default function EquipmentRequestsPage() {
 					if (isReadOnlyAdmin) return;
 					await equipmentRequestsApi.decline(declineTarget.id, reason);
 					refetch();
-					setSuccessMessage('Equipment request declined.');
+					dispatchSuccess('Equipment request declined.');
 				}}
 			/>
 			<ConfirmActionModal
@@ -198,7 +193,7 @@ export default function EquipmentRequestsPage() {
 				onConfirm={async () => {
 					await equipmentRequestsApi.approve(approveTarget.id);
 					refetch();
-					setSuccessMessage('Equipment request approved.');
+					dispatchSuccess('Equipment request approved.');
 					setApproveTarget(null);
 				}}
 			/>
@@ -212,7 +207,7 @@ export default function EquipmentRequestsPage() {
 				onConfirm={async () => {
 					await equipmentRequestsApi.cancel(cancelTarget.id);
 					refetch();
-					setSuccessMessage('Equipment request cancelled.');
+					dispatchSuccess('Equipment request cancelled.');
 					setCancelTarget(null);
 				}}
 			/>

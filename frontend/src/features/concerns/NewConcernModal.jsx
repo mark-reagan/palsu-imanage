@@ -9,6 +9,7 @@ import { useApiRequest } from '../../hooks/useApiRequest';
 import { CONCERN_SEVERITIES } from '../../lib/constants';
 import { equipmentApi } from '../equipment/api';
 import { concernsApi } from './api';
+import { dispatchSuccess } from '../../lib/toast';
 
 const EMPTY = { equipment_id: '', description: '', severity: 'minor' };
 
@@ -34,19 +35,10 @@ function NewConcernModalContent({ onClose, onSaved }) {
 
 	async function confirmSubmit() {
 		setError(null);
-		try {
-			await concernsApi.create(form);
-			onSaved?.();
-			window.dispatchEvent(
-				new CustomEvent('app-success', {
-					detail: { message: 'Concern report submitted successfully.' },
-				}),
-			);
-			onClose();
-		} catch (err) {
-			setError(err);
-			throw err;
-		}
+		await concernsApi.create(form);
+		onSaved?.();
+		dispatchSuccess('Concern report submitted successfully.');
+		onClose();
 	}
 
 	return (

@@ -8,11 +8,11 @@ import Spinner from '../../components/ui/Spinner';
 import ErrorAlert from '../../components/ui/ErrorAlert';
 import DeclineReasonModal from '../../components/ui/DeclineReasonModal';
 import ConfirmActionModal from '../../components/ui/ConfirmActionModal';
-import SuccessAlert from '../../components/ui/SuccessAlert';
 import { useApiRequest } from '../../hooks/useApiRequest';
 import { useAuth } from '../auth/useAuth';
 import { ROLES } from '../../lib/constants';
 import { supplyRequestsApi } from './api';
+import { dispatchSuccess } from '../../lib/toast';
 import { useOfflineMode } from '../../hooks/useOfflineMode';
 
 export default function SupplyRequestsPage() {
@@ -23,8 +23,6 @@ export default function SupplyRequestsPage() {
 	const [declineTarget, setDeclineTarget] = useState(null);
 	const [approveTarget, setApproveTarget] = useState(null);
 	const [cancelTarget, setCancelTarget] = useState(null);
-	const [actionError, setActionError] = useState(null);
-	const [successMessage, setSuccessMessage] = useState('');
 
 	const { data, error, loading, refetch } = useApiRequest(
 		(signal) => supplyRequestsApi.list({ page, status }, signal),
@@ -35,7 +33,6 @@ export default function SupplyRequestsPage() {
 	const isFaculty = user.role === ROLES.FACULTY;
 
 	async function handleCancel(id) {
-		setActionError(null);
 		setCancelTarget(data?.data?.find((request) => request.id === id) || { id });
 	}
 
@@ -147,8 +144,6 @@ export default function SupplyRequestsPage() {
 					</Select>
 				</div>
 
-				<ErrorAlert error={actionError} className="mb-4" />
-				<SuccessAlert message={successMessage} className="mb-4" />
 				{loading && <Spinner />}
 				<ErrorAlert error={error} />
 				{!loading && !error && (
@@ -172,7 +167,7 @@ export default function SupplyRequestsPage() {
 					if (isReadOnlyAdmin) return;
 					await supplyRequestsApi.decline(declineTarget.id, reason);
 					refetch();
-					setSuccessMessage('Supply request declined.');
+					dispatchSuccess('Supply request declined.');
 				}}
 			/>
 			<ConfirmActionModal
@@ -184,7 +179,7 @@ export default function SupplyRequestsPage() {
 				onConfirm={async () => {
 					await supplyRequestsApi.approve(approveTarget.id);
 					refetch();
-					setSuccessMessage('Supply request approved.');
+					dispatchSuccess('Supply request approved.');
 					setApproveTarget(null);
 				}}
 			/>
@@ -198,7 +193,7 @@ export default function SupplyRequestsPage() {
 				onConfirm={async () => {
 					await supplyRequestsApi.cancel(cancelTarget.id);
 					refetch();
-					setSuccessMessage('Supply request cancelled.');
+					dispatchSuccess('Supply request cancelled.');
 					setCancelTarget(null);
 				}}
 			/>

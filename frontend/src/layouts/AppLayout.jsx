@@ -5,7 +5,6 @@ import NotificationBell from '../features/notifications/NotificationBell';
 import Icon from '../components/ui/Icon';
 import ErrorBoundary from '../components/ui/ErrorBoundary';
 import ConfirmActionModal from '../components/ui/ConfirmActionModal';
-import SuccessAlert from '../components/ui/SuccessAlert';
 import { NAV_ITEMS } from './navConfig';
 import { useOfflineMode } from '../hooks/useOfflineMode';
 import { useTheme } from '../app/useTheme';
@@ -57,7 +56,6 @@ export default function AppLayout() {
 	const { theme, toggleTheme } = useTheme();
 	const [mobileOpen, setMobileOpen] = useState(false);
 	const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
-	const [successMessage, setSuccessMessage] = useState('');
 
 	useEffect(() => {
 		if (!mobileOpen) return undefined;
@@ -74,15 +72,6 @@ export default function AppLayout() {
 			document.removeEventListener('keydown', handleKeyDown);
 		};
 	}, [mobileOpen]);
-
-	useEffect(() => {
-		function handleSuccess(event) {
-			setSuccessMessage(event.detail?.message || 'Changes saved successfully.');
-		}
-
-		window.addEventListener('app-success', handleSuccess);
-		return () => window.removeEventListener('app-success', handleSuccess);
-	}, []);
 
 	async function handleLogout() {
 		await logout();
@@ -243,7 +232,6 @@ export default function AppLayout() {
 				</header>
 
 				<main className="px-4 py-6 sm:px-6 lg:px-8">
-					<SuccessAlert message={successMessage} className="mb-4" />
 					<ErrorBoundary key={location.pathname}>
 						<Outlet />
 					</ErrorBoundary>

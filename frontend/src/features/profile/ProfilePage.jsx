@@ -4,11 +4,11 @@ import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
 import ErrorAlert from '../../components/ui/ErrorAlert';
 import ConfirmActionModal from '../../components/ui/ConfirmActionModal';
-import SuccessAlert from '../../components/ui/SuccessAlert';
 import Badge from '../../components/ui/Badge';
 import { useAuth } from '../auth/useAuth';
 import { authApi } from '../auth/api';
 import { useOfflineMode } from '../../hooks/useOfflineMode';
+import { dispatchSuccess } from '../../lib/toast';
 
 export default function ProfilePage() {
 	const { user, refreshUser } = useAuth();
@@ -21,12 +21,10 @@ export default function ProfilePage() {
 		password_confirmation: '',
 	});
 	const [error, setError] = useState(null);
-	const [success, setSuccess] = useState(false);
 	const [confirmOpen, setConfirmOpen] = useState(false);
 
 	function update(field, value) {
 		setForm((f) => ({ ...f, [field]: value }));
-		setSuccess(false);
 	}
 
 	function handleSubmit(e) {
@@ -37,30 +35,19 @@ export default function ProfilePage() {
 	async function confirmSave() {
 		if (isReadOnlyAdmin) return;
 		setError(null);
-		setSuccess(false);
-		try {
-			const payload = {
-				name: form.name,
-				department: form.department,
-				contact_number: form.contact_number,
-			};
-			if (form.password) {
-				payload.password = form.password;
-				payload.password_confirmation = form.password_confirmation;
-			}
-			await authApi.updateProfile(payload);
-			await refreshUser();
-			setForm((f) => ({ ...f, password: '', password_confirmation: '' }));
-			setSuccess(true);
-			window.dispatchEvent(
-				new CustomEvent('app-success', {
-					detail: { message: 'Profile updated successfully.' },
-				}),
-			);
-		} catch (err) {
-			setError(err);
-			throw err;
+		const payload = {
+			name: form.name,
+			department: form.department,
+			contact_number: form.contact_number,
+		};
+		if (form.password) {
+			payload.password = form.password;
+			payload.password_confirmation = form.password_confirmation;
 		}
+		await authApi.updateProfile(payload);
+		await refreshUser();
+		setForm((f) => ({ ...f, password: '', password_confirmation: '' }));
+		dispatchSuccess('Profile updated successfully.');
 	}
 
 	return (
@@ -119,7 +106,6 @@ export default function ProfilePage() {
 					/>
 
 					<ErrorAlert error={error} />
-					{success && <SuccessAlert message="Profile updated successfully." />}
 
 					<Button type="submit" disabled={isReadOnlyAdmin}>
 						Review changes
