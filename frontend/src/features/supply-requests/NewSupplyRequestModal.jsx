@@ -231,12 +231,12 @@ function NewSupplyRequestModalContent({
 									}
 								/>
 
-								<div className="flex justify-center pt-2">
+								<div className="flex justify-start pt-2">
 									<Button
 										type="button"
 										variant="danger"
 										onClick={() => removeBatchItem(index)}
-										className="px-6"
+										className="w-full px-6 sm:w-auto"
 									>
 										Remove item
 									</Button>

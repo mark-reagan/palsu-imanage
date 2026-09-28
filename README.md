@@ -1,36 +1,33 @@
 # School Inventory & Property Management System
 
-A full-stack application for managing equipment and supplies inventory, staff requests, approvals, release/return workflows, concerns, and role-based access for a school or organization.
+A local full-stack web application for managing school equipment and supplies, request approvals, item releases and returns, equipment concerns, and user access by role.
 
-## Overview
+## About the web app
 
-This app helps staff and administrators manage:
+The system provides dedicated workflows for administrators, staff, faculty, and outsiders:
 
-- inventory for equipment and supplies
-- request and approval workflows
-- item release and return tracking
-- QR/barcode-based lookup and verification
-- damage and issue reporting
-- role-based dashboards for admin, staff, faculty, and outsider users
+- Maintain equipment and supply inventories.
+- Submit, review, approve, decline, and track inventory requests.
+- Record equipment releases, returns, and condition updates.
+- Look up requests and inventory using QR codes and barcodes.
+- Report and review equipment damage or other concerns.
+- View dashboards, reports, and notifications appropriate to each role.
 
-## Stack
+## Technology
 
-- Backend: Laravel 13 + PHP 8.4 + Sanctum
-- Frontend: React 18 + Vite + Tailwind CSS
-- Database: SQLite by default, or MySQL/PostgreSQL via environment config
+- Backend: Laravel 13, PHP 8.4, Sanctum
+- Frontend: React 18, Vite, Tailwind CSS
+- Database: SQLite by default; local MySQL or PostgreSQL can be configured through the backend environment.
 
-## Project structure
+The repository is organized into `backend/` for the Laravel API and `frontend/` for the React application.
 
-```bash
-backend/   # Laravel API
-frontend/  # React app
-```
+## Local development
 
-## Local development setup
+### Backend
 
-### 1) Backend
+From the repository root:
 
-```bash
+```sh
 cd backend
 composer install
 cp .env.example .env
@@ -40,50 +37,41 @@ php artisan db:seed
 php artisan serve
 ```
 
-The API runs at `http://localhost:8000`.
+The local API is available at `http://localhost:8000`.
 
-Default development accounts seeded by the app:
+Seeded local accounts:
 
 - Admin: `admin@school.edu` / `password123`
 - Staff: `staff@school.edu` / `password123`
 
-### 2) Frontend
+### Frontend
 
-```bash
+In another terminal, from the repository root:
+
+```sh
 cd frontend
 npm install
 cp .env.example .env
 ```
 
-Set the API URL in your local `.env` file:
+Set the local API endpoint in `frontend/.env`:
 
 ```env
 VITE_API_URL=http://localhost:8000/api/v1
 ```
 
-Then run:
+Start the local development server:
 
-```bash
+```sh
 npm run dev
 ```
 
-The app runs at `http://localhost:5173`.
+The frontend is available at `http://localhost:5173`.
 
-## App features
+## Local checks
 
-- equipment and supply management
-- request and approval workflows
-- release and return tracking with condition updates
-- QR code and barcode scanning
-- reporting and dashboards
-- concern handling and user notifications
-
-## Useful checks
-
-```bash
+```sh
 cd backend && php artisan test
 cd frontend && npm run lint
 cd frontend && npm run build
 ```
-
-This repository is intended for local development and app setup only. Production deployment settings belong in the deployment environment, not in the app documentation.
