@@ -36,6 +36,29 @@ class EquipmentRequestController extends Controller
             $query->where('status', $request->string('status'));
         }
 
+        $search = trim((string) $request->query('search', ''));
+        $searchBy = $request->query('search_by');
+        if ($search !== '') {
+            if ($searchBy === 'qr' && str_contains($search, '/track/')) {
+                $search = basename((string) parse_url($search, PHP_URL_PATH));
+            }
+
+            match ($searchBy) {
+                'requester' => $query->whereHas('user', fn ($userQuery) => $userQuery->where('name', 'like', "%{$search}%")),
+                'item' => $query->whereHas('equipment', fn ($equipmentQuery) => $equipmentQuery
+                    ->where('name', 'like', "%{$search}%")
+                    ->orWhere('asset_code', 'like', "%{$search}%")
+                    ->orWhere('barcode', 'like', "%{$search}%")),
+                'reviewer' => $query->whereHas('approver', fn ($approverQuery) => $approverQuery->where('name', 'like', "%{$search}%")),
+                'qr' => $query->where('tracking_token', 'like', "%{$search}%"),
+                default => $query->where(function ($searchQuery) use ($search) {
+                    $searchQuery->whereHas('user', fn ($userQuery) => $userQuery->where('name', 'like', "%{$search}%"))
+                        ->orWhereHas('equipment', fn ($equipmentQuery) => $equipmentQuery->where('name', 'like', "%{$search}%"))
+                        ->orWhere('tracking_token', 'like', "%{$search}%");
+                }),
+            };
+        }
+
         return EquipmentRequestResource::collection($query->orderByDesc('id')->paginate(20));
     }
 

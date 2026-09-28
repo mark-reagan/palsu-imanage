@@ -3,6 +3,8 @@ import Card from '../../components/ui/Card';
 import Table from '../../components/ui/Table';
 import Pagination from '../../components/ui/Pagination';
 import Badge from '../../components/ui/Badge';
+import Button from '../../components/ui/Button';
+import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
 import Spinner from '../../components/ui/Spinner';
 import ErrorAlert from '../../components/ui/ErrorAlert';
@@ -14,19 +16,31 @@ import { ROLES } from '../../lib/constants';
 import { supplyRequestsApi } from './api';
 import { dispatchSuccess } from '../../lib/toast';
 import { useOfflineMode } from '../../hooks/useOfflineMode';
+import RequestQrScannerModal from '../request-tracking/RequestQrScannerModal';
 
 export default function SupplyRequestsPage() {
 	const { user } = useAuth();
 	const { isReadOnlyAdmin } = useOfflineMode();
 	const [page, setPage] = useState(1);
 	const [status, setStatus] = useState('');
+	const [searchBy, setSearchBy] = useState(
+		user.role === ROLES.ADMIN || user.role === ROLES.STAFF
+			? 'requester'
+			: 'item',
+	);
+	const [search, setSearch] = useState('');
+	const [scannerOpen, setScannerOpen] = useState(false);
 	const [declineTarget, setDeclineTarget] = useState(null);
 	const [approveTarget, setApproveTarget] = useState(null);
 	const [cancelTarget, setCancelTarget] = useState(null);
 
 	const { data, error, loading, refetch } = useApiRequest(
-		(signal) => supplyRequestsApi.list({ page, status }, signal),
-		[page, status],
+		(signal) =>
+			supplyRequestsApi.list(
+				{ page, status, search_by: searchBy, search },
+				signal,
+			),
+		[page, status, searchBy, search],
 	);
 
 	const isAdmin = user.role === ROLES.ADMIN;
@@ -127,8 +141,53 @@ export default function SupplyRequestsPage() {
 			</div>
 
 			<Card>
-				<div className="mb-4 max-w-xs">
+				<div className="mb-4 grid grid-cols-1 items-end gap-3 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)]">
+					<Input
+						className="h-9"
+						label={`Search by ${searchBy === 'item' ? 'supply' : searchBy === 'qr' ? 'QR code' : searchBy}`}
+						placeholder={
+							searchBy === 'qr'
+								? 'Enter request QR code or token'
+								: `Search ${searchBy === 'item' ? 'supply' : searchBy}...`
+						}
+						value={search}
+						onChange={(event) => {
+							setPage(1);
+							setSearch(event.target.value);
+						}}
+					/>
+					{searchBy === 'qr' && (isAdmin || user.role === ROLES.STAFF) && (
+						<Button
+							className="h-9 w-full"
+							variant="secondary"
+							type="button"
+							onClick={() => setScannerOpen(true)}
+						>
+							Scan QR code
+						</Button>
+					)}
 					<Select
+						className="h-9"
+						label="Search by"
+						value={searchBy}
+						onChange={(event) => {
+							setPage(1);
+							setSearchBy(event.target.value);
+							setSearch('');
+						}}
+					>
+						{(isAdmin || user.role === ROLES.STAFF) && (
+							<option value="requester">Requester</option>
+						)}
+						<option value="item">Supply</option>
+						{(isAdmin || user.role === ROLES.STAFF) && (
+							<option value="reviewer">Reviewed by</option>
+						)}
+						<option value="qr">QR code</option>
+					</Select>
+					<Select
+						className="h-9"
+						label="Filter by status"
 						value={status}
 						onChange={(e) => {
 							setPage(1);
@@ -181,6 +240,16 @@ export default function SupplyRequestsPage() {
 					refetch();
 					dispatchSuccess('Supply request approved.');
 					setApproveTarget(null);
+				}}
+			/>
+			<RequestQrScannerModal
+				open={scannerOpen}
+				onClose={() => setScannerOpen(false)}
+				onScanned={(trackingCode) => {
+					setSearch(trackingCode);
+					setSearchBy('qr');
+					setPage(1);
+					setScannerOpen(false);
 				}}
 			/>
 			<ConfirmActionModal

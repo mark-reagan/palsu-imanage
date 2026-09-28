@@ -253,4 +253,78 @@ class Phase7ActorAndRoleTest extends TestCase
             ->assertJsonFragment(['name' => $admin->name])
             ->assertJsonFragment(['name' => $staff->name]);
     }
+
+    public function test_equipment_request_list_can_search_requester_item_reviewer_and_qr_code(): void
+    {
+        $admin = $this->user('admin', 'request-search-admin@example.edu');
+        $faculty = $this->user('faculty', 'request-search-faculty@example.edu');
+        $reviewer = $this->user('admin', 'request-search-reviewer@example.edu');
+        $equipment = Equipment::create([
+            'name' => 'Search Projector',
+            'asset_code' => 'SEARCH-EQ-001',
+            'barcode' => 'SEARCH-EQ-BARCODE',
+            'total_quantity' => 1,
+            'available_quantity' => 1,
+            'condition' => 'good',
+            'status' => 'available',
+        ]);
+        $request = EquipmentRequest::create([
+            'user_id' => $faculty->id,
+            'equipment_id' => $equipment->id,
+            'quantity' => 1,
+            'purpose' => 'Search test',
+            'start_date' => now()->addDay(),
+            'end_date' => now()->addDays(2),
+            'status' => 'approved',
+            'approved_by' => $reviewer->id,
+            'approved_at' => now(),
+        ]);
+
+        foreach ([
+            ['search_by' => 'requester', 'search' => 'Faculty User'],
+            ['search_by' => 'item', 'search' => 'SEARCH-EQ-BARCODE'],
+            ['search_by' => 'reviewer', 'search' => 'Admin User'],
+            ['search_by' => 'qr', 'search' => $request->tracking_token],
+        ] as $filters) {
+            $this->actingAs($admin, 'sanctum')
+                ->getJson('/api/v1/equipment-requests?'.http_build_query($filters))
+                ->assertOk()
+                ->assertJsonPath('data.0.id', $request->id);
+        }
+    }
+
+    public function test_supply_request_list_can_search_requester_item_reviewer_and_qr_code(): void
+    {
+        $admin = $this->user('admin', 'supply-search-admin@example.edu');
+        $faculty = $this->user('faculty', 'supply-search-faculty@example.edu');
+        $reviewer = $this->user('admin', 'supply-search-reviewer@example.edu');
+        $supply = Supply::create([
+            'name' => 'Search Paper',
+            'barcode' => 'SEARCH-SUP-BARCODE',
+            'unit' => 'ream',
+            'stock_quantity' => 20,
+            'reorder_level' => 2,
+        ]);
+        $request = SupplyRequest::create([
+            'user_id' => $faculty->id,
+            'supply_id' => $supply->id,
+            'quantity' => 2,
+            'purpose' => 'Search test',
+            'status' => 'approved',
+            'approved_by' => $reviewer->id,
+            'approved_at' => now(),
+        ]);
+
+        foreach ([
+            ['search_by' => 'requester', 'search' => 'Faculty User'],
+            ['search_by' => 'item', 'search' => 'SEARCH-SUP-BARCODE'],
+            ['search_by' => 'reviewer', 'search' => 'Admin User'],
+            ['search_by' => 'qr', 'search' => $request->tracking_token],
+        ] as $filters) {
+            $this->actingAs($admin, 'sanctum')
+                ->getJson('/api/v1/supply-requests?'.http_build_query($filters))
+                ->assertOk()
+                ->assertJsonPath('data.0.id', $request->id);
+        }
+    }
 }
