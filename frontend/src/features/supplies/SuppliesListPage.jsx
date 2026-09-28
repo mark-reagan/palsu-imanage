@@ -74,18 +74,22 @@ export default function SuppliesListPage() {
 		},
 		{ key: 'category', header: 'Category', render: (r) => r.category || '—' },
 		{ key: 'unit', header: 'Unit' },
-		{
-			key: 'barcode',
-			header: 'Barcode',
-			render: (r) => (
-				<button
-					className="font-mono text-xs text-[var(--accent-strong)] hover:text-[var(--accent)] hover:underline"
-					onClick={() => setBarcodeTarget(r)}
-				>
-					{r.barcode}
-				</button>
-			),
-		},
+		...(canScanBarcode
+			? [
+					{
+						key: 'barcode',
+						header: 'Barcode',
+						render: (r) => (
+							<button
+								className="font-mono text-xs text-[var(--accent-strong)] hover:text-[var(--accent)] hover:underline"
+								onClick={() => setBarcodeTarget(r)}
+							>
+								{r.barcode}
+							</button>
+						),
+					},
+				]
+			: []),
 		{
 			key: 'stock',
 			header: 'Stock',
@@ -102,7 +106,9 @@ export default function SuppliesListPage() {
 				</span>
 			),
 		},
-		{ key: 'reorder_level', header: 'Reorder level' },
+		...(canScanBarcode
+			? [{ key: 'reorder_level', header: 'Reorder level' }]
+			: []),
 		{
 			key: 'actions',
 			header: '',
