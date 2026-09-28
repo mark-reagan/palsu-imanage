@@ -8,6 +8,7 @@ import Badge from '../../components/ui/Badge';
 import ErrorAlert from '../../components/ui/ErrorAlert';
 import Spinner from '../../components/ui/Spinner';
 import BarcodeImage from '../supplies/BarcodeImage';
+import { dispatchError } from '../../lib/toast';
 import { equipmentApi } from './api';
 
 export default function EquipmentBarcodeModal({
@@ -19,7 +20,7 @@ export default function EquipmentBarcodeModal({
 }) {
 	const videoRef = useRef(null);
 	const controlsRef = useRef(null);
-	const lookupRef = useRef(null);
+	const submitBarcodeRef = useRef(null);
 	const onScannedRef = useRef(null);
 	const barcodeRef = useRef(null);
 	const [code, setCode] = useState(equipment?.barcode || '');
@@ -29,7 +30,7 @@ export default function EquipmentBarcodeModal({
 	const [cameraError, setCameraError] = useState(null);
 
 	useEffect(() => {
-		lookupRef.current = lookup;
+		submitBarcodeRef.current = submitBarcode;
 		onScannedRef.current = onScanned;
 	});
 
@@ -41,12 +42,7 @@ export default function EquipmentBarcodeModal({
 				if (!scanResult) return;
 				const scannedCode = scanResult.getText().trim();
 				setCode(scannedCode);
-				if (onScannedRef.current) {
-					onScannedRef.current(scannedCode);
-					controlsRef.current?.stop();
-					return;
-				}
-				lookupRef.current?.(scannedCode);
+				submitBarcodeRef.current?.(scannedCode);
 				controlsRef.current?.stop();
 			})
 			.then((controls) => {
@@ -65,7 +61,7 @@ export default function EquipmentBarcodeModal({
 	}, [open, scanEnabled]);
 
 	async function lookup(value = code) {
-		const barcode = value.trim();
+		const barcode = value.trim().toUpperCase();
 		if (!barcode) return;
 		setLoading(true);
 		setError(null);
@@ -77,6 +73,24 @@ export default function EquipmentBarcodeModal({
 		} finally {
 			setLoading(false);
 		}
+	}
+
+	function submitBarcode(value = code) {
+		const barcode = value.trim().toUpperCase();
+		if (!/^EQ-(?:[A-Z0-9]{10}|[0-9]{8})$/.test(barcode)) {
+			setResult(null);
+			setError(null);
+			dispatchError('Enter a valid equipment barcode.');
+			return;
+		}
+
+		setError(null);
+		if (onScannedRef.current) {
+			onScannedRef.current(barcode);
+			controlsRef.current?.stop();
+			return;
+		}
+		lookup(barcode);
 	}
 
 	function downloadBarcode() {
@@ -114,19 +128,22 @@ export default function EquipmentBarcodeModal({
 							below.
 						</p>
 						<form
-							className="flex items-end gap-2"
+							className="flex w-full items-end gap-2"
 							onSubmit={(event) => {
 								event.preventDefault();
-								lookup();
+								submitBarcode();
 							}}
 						>
-							<Input
-								label="Barcode code"
-								value={code}
-								onChange={(event) => setCode(event.target.value)}
-								placeholder="EQ-00000001"
-							/>
-							<Button type="submit" loading={loading}>
+							<div className="min-w-0 flex-1">
+								<Input
+									className="w-full"
+									label="Barcode code"
+									value={code}
+									onChange={(event) => setCode(event.target.value)}
+									placeholder="EQ-00000001"
+								/>
+							</div>
+							<Button type="submit" loading={loading} className="shrink-0">
 								Check
 							</Button>
 						</form>

@@ -5,6 +5,7 @@ import Pagination from '../../components/ui/Pagination';
 import Badge from '../../components/ui/Badge';
 import Spinner from '../../components/ui/Spinner';
 import ErrorAlert from '../../components/ui/ErrorAlert';
+import Modal from '../../components/ui/Modal';
 import { useApiRequest } from '../../hooks/useApiRequest';
 import { formatDateTime, titleCase } from '../../lib/format';
 import { reportsApi } from './api';
@@ -15,6 +16,7 @@ const TABS = [
 	{ key: 'supplies', label: 'Supply Report' },
 	{ key: 'supply-usage', label: 'Supply Usage' },
 	{ key: 'transactions', label: 'Transactions' },
+	{ key: 'concerns', label: 'Damage & Concerns' },
 ];
 
 function StatCard({ label, value }) {
@@ -333,6 +335,80 @@ function TransactionsTab() {
 	);
 }
 
+function ConcernReportTab() {
+	const [page, setPage] = useState(1);
+	const [selected, setSelected] = useState(null);
+	const { data, error, loading } = useApiRequest(
+		(signal) => reportsApi.concerns({ page }, signal),
+		[page],
+	);
+
+	const columns = [
+		{
+			key: 'created_at',
+			header: 'Saved on',
+			render: (r) => formatDateTime(r.created_at),
+		},
+		{ key: 'action', header: 'Record', render: (r) => titleCase(r.action) },
+		{ key: 'equipment_name', header: 'Equipment' },
+		{ key: 'asset_code', header: 'Asset Code', render: (r) => r.asset_code || '—' },
+		{ key: 'reporter_name', header: 'Reported by' },
+		{ key: 'severity', header: 'Severity', render: (r) => <Badge status={r.severity} /> },
+		{ key: 'status', header: 'Status', render: (r) => <Badge status={r.status} /> },
+		{
+			key: 'admin_remarks',
+			header: 'Admin remarks',
+			render: (r) => r.admin_remarks ? (
+				<button
+					type="button"
+					className="max-w-56 text-left text-[var(--accent-strong)] underline decoration-dotted underline-offset-2 hover:text-[var(--accent)]"
+					onClick={() => setSelected(r)}
+					aria-label="View full admin remarks"
+				>
+					<span className="block truncate">{r.admin_remarks}</span>
+					<span className="text-xs">View remarks</span>
+				</button>
+			) : '—',
+		},
+		{
+			key: 'actor',
+			header: 'Saved by',
+			render: (r) => <ActorAttribution actor={{ name: r.actor_name, role: r.actor_role }} />,
+		},
+	];
+
+	if (loading) return <Spinner />;
+	if (error) return <ErrorAlert error={error} />;
+
+	return (
+		<>
+			<p className="mb-3 text-sm text-[var(--text-soft)]">
+				Each report and review save is retained as a separate history record.
+			</p>
+			<ReportTable>
+				<Table columns={columns} rows={data?.data} emptyMessage="No damage or concern history recorded." />
+			</ReportTable>
+			<Pagination meta={data} onPageChange={setPage} />
+			<Modal
+				open={!!selected}
+				onClose={() => setSelected(null)}
+				title={`Admin remarks — ${selected?.equipment_name || 'Concern'}`}
+			>
+				{selected && (
+					<div className="space-y-3 text-sm">
+						<p className="text-[var(--text-soft)]">
+							{titleCase(selected.action)} · {formatDateTime(selected.created_at)} · {selected.actor_name}
+						</p>
+						<p className="whitespace-pre-wrap break-words rounded-lg border border-[var(--border)] bg-[var(--surface-muted)] p-3">
+							{selected.admin_remarks}
+						</p>
+					</div>
+				)}
+			</Modal>
+		</>
+	);
+}
+
 export default function ReportsPage() {
 	const [tab, setTab] = useState('overview');
 
@@ -367,6 +443,7 @@ export default function ReportsPage() {
 				{tab === 'supplies' && <SupplyReportTab />}
 				{tab === 'supply-usage' && <SupplyUsageTab />}
 				{tab === 'transactions' && <TransactionsTab />}
+				{tab === 'concerns' && <ConcernReportTab />}
 			</Card>
 		</div>
 	);

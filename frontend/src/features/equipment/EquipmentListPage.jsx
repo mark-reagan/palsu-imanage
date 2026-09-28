@@ -75,19 +75,23 @@ export default function EquipmentListPage() {
 				<span className="font-medium text-slate-900">{r.name}</span>
 			),
 		},
-		{ key: 'asset_code', header: 'Asset Code' },
-		{
-			key: 'barcode',
-			header: 'Barcode',
-			render: (r) => (
-				<button
-					className="font-mono text-xs text-[var(--accent-strong)] hover:text-[var(--accent)] hover:underline"
-					onClick={() => setBarcodeTarget(r)}
-				>
-					{r.barcode}
-				</button>
-			),
-		},
+		...(canScanBarcode ? [{ key: 'asset_code', header: 'Asset Code' }] : []),
+		...(canScanBarcode
+			? [
+					{
+						key: 'barcode',
+						header: 'Barcode',
+						render: (r) => (
+							<button
+								className="font-mono text-xs text-[var(--accent-strong)] hover:text-[var(--accent)] hover:underline"
+								onClick={() => setBarcodeTarget(r)}
+							>
+								{r.barcode}
+							</button>
+						),
+					},
+				]
+			: []),
 		{ key: 'category', header: 'Category', render: (r) => r.category || '—' },
 		{
 			key: 'available',
@@ -333,7 +337,7 @@ export default function EquipmentListPage() {
 					open
 					onClose={() => setBarcodeTarget(null)}
 					equipment={barcodeTarget}
-					scanEnabled={canScanBarcode}
+					scanEnabled={false}
 				/>
 			)}
 			{scannerOpen && (

@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\EquipmentResource;
 use App\Http\Resources\EquipmentTransactionResource;
+use App\Http\Resources\ConcernHistoryResource;
 use App\Http\Resources\SupplyResource;
 use App\Http\Resources\SupplyTransactionResource;
 use App\Models\Equipment;
 use App\Models\EquipmentConcern;
+use App\Models\EquipmentConcernHistory;
 use App\Models\EquipmentRequest;
 use App\Models\EquipmentTransaction;
 use App\Models\Supply;
@@ -78,5 +80,12 @@ class ReportController extends Controller
             'equipment_transactions' => EquipmentTransactionResource::collection($equipmentTx),
             'supply_transactions' => SupplyTransactionResource::collection($supplyTx),
         ]);
+    }
+
+    public function concernReport()
+    {
+        return ConcernHistoryResource::collection(
+            EquipmentConcernHistory::query()->orderByDesc('created_at')->orderByDesc('id')->paginate(30)
+        );
     }
 }

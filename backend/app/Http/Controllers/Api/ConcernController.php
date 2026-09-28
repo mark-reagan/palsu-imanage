@@ -8,8 +8,10 @@ use App\Http\Requests\StoreConcernRequest;
 use App\Http\Resources\ConcernResource;
 use App\Models\Equipment;
 use App\Models\EquipmentConcern;
+use App\Models\EquipmentConcernHistory;
 use App\Models\User;
 use App\Notifications\ConcernNotification;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 
 /**
@@ -36,7 +38,12 @@ class ConcernController extends Controller
 
         $data['reported_by'] = $request->user()->id;
 
-        $concern = EquipmentConcern::create($data);
+        $concern = DB::transaction(function () use ($data, $request) {
+            $concern = EquipmentConcern::create($data);
+            $this->recordHistory($concern, 'reported', $request->user());
+
+            return $concern;
+        });
         $equipment = $concern->equipment;
 
         User::query()
@@ -62,23 +69,47 @@ class ConcernController extends Controller
     {
         $data = $request->validated();
 
-        $concern->update([
-            'status' => $data['status'],
-            'admin_remarks' => $data['admin_remarks'] ?? null,
-            'reviewed_by' => $request->user()->id,
-            'reviewed_at' => now(),
-        ]);
+        DB::transaction(function () use ($concern, $data, $request) {
+            $concern->update([
+                'status' => $data['status'],
+                'admin_remarks' => $data['admin_remarks'] ?? null,
+                'reviewed_by' => $request->user()->id,
+                'reviewed_at' => now(),
+            ]);
 
-        if (! empty($data['update_condition'])) {
-            $equipment = $concern->equipment;
-            $equipment->condition = $data['update_condition'];
-            $equipment->save();
-        }
+            if (! empty($data['update_condition'])) {
+                $equipment = $concern->equipment;
+                $equipment->condition = $data['update_condition'];
+                $equipment->save();
+            }
+
+            $this->recordHistory($concern, $data['status'], $request->user());
+        });
 
         $concern->reporter->notify(new ConcernNotification(
             $concern->id, $concern->equipment->name, $data['status']
         ));
 
         return new ConcernResource($concern->fresh(['equipment']));
+    }
+
+    private function recordHistory(EquipmentConcern $concern, string $action, User $actor): void
+    {
+        $concern->loadMissing(['equipment', 'reporter']);
+
+        EquipmentConcernHistory::create([
+            'concern_id' => $concern->id,
+            'action' => $action,
+            'equipment_name' => $concern->equipment->name,
+            'asset_code' => $concern->equipment->asset_code,
+            'reporter_name' => $concern->reporter->name,
+            'description' => $concern->description,
+            'severity' => $concern->severity,
+            'status' => $concern->status ?? 'open',
+            'admin_remarks' => $concern->admin_remarks,
+            'actor_name' => $actor->name,
+            'actor_role' => $actor->role,
+            'created_at' => now(),
+        ]);
     }
 }
