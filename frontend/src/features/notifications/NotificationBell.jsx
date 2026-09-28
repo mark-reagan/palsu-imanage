@@ -191,10 +191,16 @@ export default function NotificationBell() {
 									<p className="font-medium text-[var(--text)]">
 										{n.data?.title || 'Notification'}
 									</p>
-									<p className="text-[var(--text-soft)]">
-										From:{' '}
-										{n.data?.from_name || n.data?.requester_name || 'Unknown'}
-									</p>
+									{n.data?.item_name && (
+										<p className="text-[var(--text-soft)]">
+											{n.data.item_name}
+										</p>
+									)}
+									{(n.data?.from_name || n.data?.requester_name) && (
+										<p className="text-[var(--text-soft)]">
+											From: {n.data.from_name || n.data.requester_name}
+										</p>
+									)}
 									<p className="mt-0.5 text-xs text-[var(--text-soft)]">
 										{formatDateTime(n.created_at)}
 									</p>

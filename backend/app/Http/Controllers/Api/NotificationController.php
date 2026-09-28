@@ -31,4 +31,14 @@ class NotificationController extends Controller
 
         return response()->json(['message' => 'All notifications marked as read.']);
     }
+
+    public function deleteRead(Request $request)
+    {
+        $deleted = $request->user()->readNotifications()->delete();
+
+        return response()->json([
+            'message' => 'Read notifications deleted.',
+            'deleted' => $deleted,
+        ]);
+    }
 }

@@ -4,6 +4,7 @@ import Card from '../../components/ui/Card';
 import Pagination from '../../components/ui/Pagination';
 import PageSkeleton from '../../components/ui/PageSkeleton';
 import ErrorAlert from '../../components/ui/ErrorAlert';
+import ConfirmActionModal from '../../components/ui/ConfirmActionModal';
 import { useApiRequest } from '../../hooks/useApiRequest';
 import { formatDateTime } from '../../lib/format';
 import { notificationsApi } from './api';
@@ -19,6 +20,7 @@ const APP_NAME = 'PalSU-iManage';
 export default function NotificationsPage() {
 	const navigate = useNavigate();
 	const [page, setPage] = useState(1);
+	const [clearModalOpen, setClearModalOpen] = useState(false);
 	const [soundEnabled, setSoundPreference] = useNotificationSoundPreference();
 	const { isReadOnlyAdmin } = useOfflineMode();
 	const { data, error, loading, refetch } = useApiRequest(
@@ -65,6 +67,12 @@ export default function NotificationsPage() {
 		refetch();
 	}
 
+	async function handleClearNotifications() {
+		await notificationsApi.deleteRead();
+		if (page === 1) refetch();
+		else setPage(1);
+	}
+
 	function toggleSound() {
 		setSoundPreference(!soundEnabled);
 	}
@@ -97,6 +105,16 @@ export default function NotificationsPage() {
 						aria-label="Mark all notifications as read"
 					>
 						Mark all read
+					</button>
+					<button
+						type="button"
+						className="btn-secondary btn-sm interactive-focus-sm"
+						onClick={() => setClearModalOpen(true)}
+						disabled={
+							isReadOnlyAdmin || loading || !(data?.total ?? data?.data?.length)
+						}
+					>
+						Clear notifications
 					</button>
 				</div>
 			</div>
@@ -133,12 +151,19 @@ export default function NotificationsPage() {
 												{!notification.read_at && (
 													<span className="sr-only">Unread</span>
 												)}
-												<p className="mt-1 text-sm text-[var(--text-soft)]">
-													From:{' '}
-													{notification.data?.from_name ||
-														notification.data?.requester_name ||
-														'Unknown'}
-												</p>
+												{notification.data?.item_name && (
+													<p className="mt-1 text-sm text-[var(--text-soft)]">
+														{notification.data.item_name}
+													</p>
+												)}
+												{(notification.data?.from_name ||
+													notification.data?.requester_name) && (
+													<p className="mt-1 text-sm text-[var(--text-soft)]">
+														From:{' '}
+														{notification.data.from_name ||
+															notification.data.requester_name}
+													</p>
+												)}
 											</div>
 											<time
 												className="shrink-0 text-xs text-[var(--text-soft)]"
@@ -163,6 +188,15 @@ export default function NotificationsPage() {
 					</>
 				)}
 			</Card>
+			<ConfirmActionModal
+				open={clearModalOpen}
+				onClose={() => setClearModalOpen(false)}
+				onConfirm={handleClearNotifications}
+				title="Clear read notifications?"
+				message="This permanently removes all read notifications. Unread notifications will not be affected. This action cannot be undone."
+				confirmLabel="Clear notifications"
+				variant="danger"
+			/>
 		</div>
 	);
 }

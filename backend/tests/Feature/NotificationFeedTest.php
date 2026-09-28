@@ -57,6 +57,39 @@ class NotificationFeedTest extends TestCase
         );
     }
 
+    public function test_delete_read_notifications_only_removes_the_authenticated_users_read_notifications(): void
+    {
+        $user = $this->createUser('faculty@example.edu');
+        $otherUser = $this->createUser('other@example.edu');
+
+        $readNotification = $user->notifications()->create([
+            'id' => (string) Str::uuid(),
+            'type' => 'test-notification',
+            'data' => ['title' => 'Read notification'],
+            'read_at' => now(),
+        ]);
+        $unreadNotification = $user->notifications()->create([
+            'id' => (string) Str::uuid(),
+            'type' => 'test-notification',
+            'data' => ['title' => 'Unread notification'],
+        ]);
+        $otherUsersReadNotification = $otherUser->notifications()->create([
+            'id' => (string) Str::uuid(),
+            'type' => 'test-notification',
+            'data' => ['title' => 'Other user read notification'],
+            'read_at' => now(),
+        ]);
+
+        $this->actingAs($user, 'sanctum')
+            ->deleteJson('/api/v1/notifications/read')
+            ->assertOk()
+            ->assertJsonPath('deleted', 1);
+
+        $this->assertDatabaseMissing('notifications', ['id' => $readNotification->id]);
+        $this->assertDatabaseHas('notifications', ['id' => $unreadNotification->id]);
+        $this->assertDatabaseHas('notifications', ['id' => $otherUsersReadNotification->id]);
+    }
+
     private function createUser(string $email): User
     {
         return User::create([

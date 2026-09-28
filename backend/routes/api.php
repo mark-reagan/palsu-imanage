@@ -49,6 +49,7 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
     Route::get('/notifications/unread', [NotificationController::class, 'unread']);
     Route::post('/notifications/{id}/read', [NotificationController::class, 'markRead']);
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead']);
+    Route::delete('/notifications/read', [NotificationController::class, 'deleteRead']);
 
     // Equipment requests: faculty + outsider create; admin/staff/owner can view.
     Route::apiResource('/equipment-requests', EquipmentRequestController::class)
