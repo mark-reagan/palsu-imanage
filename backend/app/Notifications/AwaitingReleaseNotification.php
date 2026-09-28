@@ -13,6 +13,7 @@ class AwaitingReleaseNotification extends Notification
         public string $itemType,
         public int $requestId,
         public string $itemName,
+        public ?string $fromName = null,
     ) {}
 
     public function via($notifiable): array
@@ -27,6 +28,7 @@ class AwaitingReleaseNotification extends Notification
             'item_type' => $this->itemType,
             'request_id' => $this->requestId,
             'item_name' => $this->itemName,
+            'from_name' => $this->fromName,
             'status' => 'approved',
         ];
     }

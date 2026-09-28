@@ -14,6 +14,7 @@ class ReleaseReturnNotification extends Notification
         public int $requestId,
         public string $event,      // released | returned
         public ?string $itemName = null,
+        public ?string $fromName = null,
     ) {}
 
     public function via($notifiable): array
@@ -28,6 +29,7 @@ class ReleaseReturnNotification extends Notification
             'item_type' => $this->itemType,
             'request_id' => $this->requestId,
             'item_name' => $this->itemName,
+            'from_name' => $this->fromName,
             'event' => $this->event,
         ];
     }

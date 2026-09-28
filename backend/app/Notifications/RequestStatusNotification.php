@@ -15,6 +15,7 @@ class RequestStatusNotification extends Notification
         public string $status,        // approved | declined
         public ?string $reason = null,
         public ?string $itemName = null,
+        public ?string $fromName = null,
     ) {}
 
     public function via($notifiable): array
@@ -29,6 +30,7 @@ class RequestStatusNotification extends Notification
             'request_type' => $this->requestType,
             'request_id' => $this->requestId,
             'item_name' => $this->itemName,
+            'from_name' => $this->fromName,
             'status' => $this->status,
             'reason' => $this->reason,
         ];

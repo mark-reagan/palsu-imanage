@@ -25,7 +25,8 @@ export default function NotificationBell() {
 	const knownUnreadRef = useRef(null);
 
 	useEffect(() => {
-		document.title = items.length > 0 ? `(${items.length}) PalSU-iManage` : 'PalSU-iManage';
+		document.title =
+			items.length > 0 ? `(${items.length}) PalSU-iManage` : 'PalSU-iManage';
 	}, [items]);
 
 	const loadUnread = useCallback(() => {
@@ -190,16 +191,10 @@ export default function NotificationBell() {
 									<p className="font-medium text-[var(--text)]">
 										{n.data?.title || 'Notification'}
 									</p>
-									{n.data?.item_name && (
-										<p className="text-[var(--text-soft)]">
-											{n.data.item_name}
-										</p>
-									)}
-									{n.data?.reason && (
-										<p className="text-[var(--text-soft)]">
-											Reason: {n.data.reason}
-										</p>
-									)}
+									<p className="text-[var(--text-soft)]">
+										From:{' '}
+										{n.data?.from_name || n.data?.requester_name || 'Unknown'}
+									</p>
 									<p className="mt-0.5 text-xs text-[var(--text-soft)]">
 										{formatDateTime(n.created_at)}
 									</p>

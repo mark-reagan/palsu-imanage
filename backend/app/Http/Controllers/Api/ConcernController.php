@@ -51,7 +51,7 @@ class ConcernController extends Controller
             ->where('is_active', true)
             ->get()
             ->each(fn (User $admin) => $admin->notify(new ConcernNotification(
-                $concern->id, $equipment->name, 'reported'
+                $concern->id, $equipment->name, 'reported', $request->user()->name
             )));
 
         return (new ConcernResource($concern->load('equipment')))->response()->setStatusCode(201);
@@ -87,7 +87,7 @@ class ConcernController extends Controller
         });
 
         $concern->reporter->notify(new ConcernNotification(
-            $concern->id, $concern->equipment->name, $data['status']
+            $concern->id, $concern->equipment->name, $data['status'], $request->user()->name
         ));
 
         return new ConcernResource($concern->fresh(['equipment']));

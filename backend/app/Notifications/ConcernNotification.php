@@ -13,6 +13,7 @@ class ConcernNotification extends Notification
         public int $concernId,
         public string $equipmentName,
         public string $status, // reported | reviewed | resolved
+        public ?string $fromName = null,
     ) {}
 
     public function via($notifiable): array
@@ -26,6 +27,7 @@ class ConcernNotification extends Notification
             'title' => 'Equipment concern '.$this->status,
             'concern_id' => $this->concernId,
             'equipment_name' => $this->equipmentName,
+            'from_name' => $this->fromName,
             'status' => $this->status,
         ];
     }

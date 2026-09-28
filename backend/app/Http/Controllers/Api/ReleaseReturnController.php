@@ -44,7 +44,7 @@ class ReleaseReturnController extends Controller
         });
 
         $equipmentRequest->user->notify(new ReleaseReturnNotification(
-            'equipment', $equipmentRequest->id, 'released', $equipmentRequest->equipment->name
+            'equipment', $equipmentRequest->id, 'released', $equipmentRequest->equipment->name, $request->user()->name
         ));
 
         return (new EquipmentTransactionResource($transaction->load([
@@ -87,7 +87,7 @@ class ReleaseReturnController extends Controller
         });
 
         $equipmentRequest->user->notify(new ReleaseReturnNotification(
-            'equipment', $equipmentRequest->id, 'returned', $equipment->name
+            'equipment', $equipmentRequest->id, 'returned', $equipment->name, $request->user()->name
         ));
 
         return new EquipmentTransactionResource($equipmentTransaction->fresh([
@@ -125,7 +125,7 @@ class ReleaseReturnController extends Controller
         });
 
         $supplyRequest->user->notify(new ReleaseReturnNotification(
-            'supply', $supplyRequest->id, 'released', $supply->name
+            'supply', $supplyRequest->id, 'released', $supply->name, $request->user()->name
         ));
 
         return (new SupplyTransactionResource($transaction->load([

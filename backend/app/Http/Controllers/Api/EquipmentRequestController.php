@@ -189,7 +189,7 @@ class EquipmentRequestController extends Controller
         $equipment->refreshStatus();
 
         $equipmentRequest->user->notify(new RequestStatusNotification(
-            'equipment', $equipmentRequest->id, 'approved', null, $equipment->name
+            'equipment', $equipmentRequest->id, 'approved', null, $equipment->name, $request->user()->name
         ));
 
         User::query()
@@ -200,6 +200,7 @@ class EquipmentRequestController extends Controller
                 'equipment',
                 $equipmentRequest->id,
                 $equipment->name,
+                $request->user()->name,
             )));
 
         return new EquipmentRequestResource($equipmentRequest->fresh(['equipment', 'approver']));
@@ -221,7 +222,7 @@ class EquipmentRequestController extends Controller
         ]);
 
         $equipmentRequest->user->notify(new RequestStatusNotification(
-            'equipment', $equipmentRequest->id, 'declined', $data['decline_reason'], $equipmentRequest->equipment->name
+            'equipment', $equipmentRequest->id, 'declined', $data['decline_reason'], $equipmentRequest->equipment->name, $request->user()->name
         ));
 
         return new EquipmentRequestResource($equipmentRequest->fresh(['approver']));

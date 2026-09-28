@@ -179,7 +179,7 @@ class SupplyRequestController extends Controller
         ]);
 
         $supplyRequest->user->notify(new RequestStatusNotification(
-            'supply', $supplyRequest->id, 'approved', null, $supplyRequest->supply->name
+            'supply', $supplyRequest->id, 'approved', null, $supplyRequest->supply->name, $request->user()->name
         ));
 
         User::query()
@@ -190,6 +190,7 @@ class SupplyRequestController extends Controller
                 'supply',
                 $supplyRequest->id,
                 $supplyRequest->supply->name,
+                $request->user()->name,
             )));
 
         return new SupplyRequestResource($supplyRequest->fresh(['supply', 'approver']));
@@ -211,7 +212,7 @@ class SupplyRequestController extends Controller
         ]);
 
         $supplyRequest->user->notify(new RequestStatusNotification(
-            'supply', $supplyRequest->id, 'declined', $data['decline_reason'], $supplyRequest->supply->name
+            'supply', $supplyRequest->id, 'declined', $data['decline_reason'], $supplyRequest->supply->name, $request->user()->name
         ));
 
         return new SupplyRequestResource($supplyRequest->fresh(['approver']));

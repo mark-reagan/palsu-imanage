@@ -29,6 +29,7 @@ class NewRequestNotification extends Notification
             'request_id' => $this->requestId,
             'item_name' => $this->itemName,
             'requester_name' => $this->requesterName,
+            'from_name' => $this->requesterName,
             'status' => 'pending',
         ];
     }

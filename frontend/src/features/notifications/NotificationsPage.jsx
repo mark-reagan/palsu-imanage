@@ -8,7 +8,10 @@ import { useApiRequest } from '../../hooks/useApiRequest';
 import { formatDateTime } from '../../lib/format';
 import { notificationsApi } from './api';
 import { useOfflineMode } from '../../hooks/useOfflineMode';
-import { getNotificationPath, useNotificationSoundPreference } from './notificationUtils';
+import {
+	getNotificationPath,
+	useNotificationSoundPreference,
+} from './notificationUtils';
 
 // App name for dynamic page title
 const APP_NAME = 'PalSU-iManage';
@@ -27,7 +30,8 @@ export default function NotificationsPage() {
 	const unreadCount = data?.data?.filter((n) => !n.read_at).length || 0;
 
 	useEffect(() => {
-		document.title = unreadCount > 0 ? `(${unreadCount}) ${APP_NAME}` : APP_NAME;
+		document.title =
+			unreadCount > 0 ? `(${unreadCount}) ${APP_NAME}` : APP_NAME;
 	}, [unreadCount]);
 
 	useEffect(() => {
@@ -109,7 +113,9 @@ export default function NotificationsPage() {
 										key={notification.id}
 										onClick={() => handleOpen(notification)}
 										className={`block w-full rounded-lg px-3 py-4 text-left transition-colors hover:bg-[var(--surface-muted)] focus-visible:ring-2 focus-visible:ring-orange-300 focus-visible:ring-offset-2 interactive-focus ${
-											notification.read_at ? 'bg-transparent' : 'bg-[var(--accent-soft)]'
+											notification.read_at
+												? 'bg-transparent'
+												: 'bg-[var(--accent-soft)]'
 										}`}
 										aria-label={`Notification: ${notification.data?.title || 'Notification'}`}
 									>
@@ -127,25 +133,28 @@ export default function NotificationsPage() {
 												{!notification.read_at && (
 													<span className="sr-only">Unread</span>
 												)}
-												{notification.data?.item_name && (
-													<p className="mt-1 text-sm text-[var(--text-soft)]">
-														{notification.data.item_name}
-													</p>
-												)}
-												{notification.data?.reason && (
-													<p className="mt-1 text-sm text-[var(--text-soft)]">
-														Reason: {notification.data.reason}
-													</p>
-												)}
+												<p className="mt-1 text-sm text-[var(--text-soft)]">
+													From:{' '}
+													{notification.data?.from_name ||
+														notification.data?.requester_name ||
+														'Unknown'}
+												</p>
 											</div>
-											<time className="shrink-0 text-xs text-[var(--text-soft)]" aria-label={`Created at ${formatDateTime(notification.created_at)}`}>
+											<time
+												className="shrink-0 text-xs text-[var(--text-soft)]"
+												aria-label={`Created at ${formatDateTime(notification.created_at)}`}
+											>
 												{formatDateTime(notification.created_at)}
 											</time>
 										</div>
 									</button>
 								))
 							) : (
-								<p className="py-10 text-center text-sm text-[var(--text-soft)]" role="status" aria-live="polite">
+								<p
+									className="py-10 text-center text-sm text-[var(--text-soft)]"
+									role="status"
+									aria-live="polite"
+								>
 									No notifications yet.
 								</p>
 							)}
