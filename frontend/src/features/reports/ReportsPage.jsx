@@ -370,7 +370,6 @@ function ConcernReportTab() {
 		{
 			key: 'admin_remarks',
 			header: 'Admin remarks',
-			width: '16%',
 			truncate: 'responsive',
 			render: (r) =>
 				r.admin_remarks ? (
@@ -412,7 +411,6 @@ function ConcernReportTab() {
 					rows={data?.data}
 					emptyMessage="No damage or concern history recorded."
 					truncateCells
-					fixedLayout
 				/>
 			</ReportTable>
 			<Pagination meta={data} onPageChange={setPage} />

@@ -51,22 +51,29 @@ export default function SupplyRequestsPage() {
 	}
 
 	const columns = [
-		{ key: 'supply', header: 'Supply', render: (r) => r.supply?.name || '—' },
+		{
+			key: 'supply',
+			header: 'Supply',
+			truncate: 'responsive',
+			render: (r) => r.supply?.name || '—',
+		},
 		...(isAdmin
 			? [
 					{
 						key: 'requester',
 						header: 'Requester',
+						truncate: 'responsive',
 						render: (r) => r.user?.name || '—',
 					},
 				]
 			: []),
-		{ key: 'quantity', header: 'Qty' },
+		{ key: 'quantity', header: 'Qty', truncate: 'responsive' },
 		...(isAdmin
 			? [
 					{
 						key: 'approver',
 						header: 'Reviewed By',
+						truncate: 'responsive',
 						render: (r) => r.approver?.name || '—',
 					},
 				]
@@ -80,13 +87,13 @@ export default function SupplyRequestsPage() {
 		{
 			key: 'status',
 			header: 'Status',
-			truncate: true,
+			minWidth: true,
 			render: (r) => <Badge status={r.status} />,
 		},
 		{
 			key: 'tracking',
 			header: 'QR',
-			truncate: true,
+			minWidth: true,
 			render: (r) => (
 				<a
 					className="text-[var(--accent-strong)] hover:text-[var(--accent)] hover:underline"
@@ -102,7 +109,7 @@ export default function SupplyRequestsPage() {
 			headerAlign: 'center',
 			minWidth: true,
 			render: (r) => (
-				<div className="flex justify-end gap-2">
+				<div className="flex w-max justify-end gap-2">
 					{isAdmin && r.status === 'pending' && (
 						<>
 							<button
