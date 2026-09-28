@@ -333,7 +333,7 @@ export default function EquipmentListPage() {
 					open
 					onClose={() => setBarcodeTarget(null)}
 					equipment={barcodeTarget}
-					scanEnabled={canScanBarcode}
+					scanEnabled={false}
 				/>
 			)}
 			{scannerOpen && (

@@ -330,7 +330,7 @@ export default function SuppliesListPage() {
 					open
 					onClose={() => setBarcodeTarget(null)}
 					supply={barcodeTarget}
-					scanEnabled={canScanBarcode}
+					scanEnabled={false}
 				/>
 			)}
 			{scannerOpen && (
