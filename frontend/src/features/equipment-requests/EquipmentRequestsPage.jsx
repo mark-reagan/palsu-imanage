@@ -80,9 +80,8 @@ export default function EquipmentRequestsPage() {
 		{
 			key: 'purpose',
 			header: 'Purpose',
-			render: (r) => (
-				<span className="line-clamp-1 max-w-xs">{r.purpose || '—'}</span>
-			),
+			truncate: 'responsive',
+			render: (r) => r.purpose || '—',
 		},
 		{
 			key: 'dates',
@@ -92,11 +91,13 @@ export default function EquipmentRequestsPage() {
 		{
 			key: 'status',
 			header: 'Status',
+			truncate: true,
 			render: (r) => <Badge status={r.status} />,
 		},
 		{
 			key: 'tracking',
 			header: 'QR',
+			truncate: true,
 			render: (r) => (
 				<a
 					className="text-[var(--accent-strong)] hover:text-[var(--accent)] hover:underline"
@@ -108,7 +109,9 @@ export default function EquipmentRequestsPage() {
 		},
 		{
 			key: 'actions',
-			header: '',
+			header: 'Actions',
+			headerAlign: 'center',
+			minWidth: true,
 			render: (r) => (
 				<div className="flex justify-end gap-2">
 					{isAdmin && r.status === 'pending' && (
@@ -224,6 +227,7 @@ export default function EquipmentRequestsPage() {
 							columns={columns}
 							rows={data?.data}
 							emptyMessage="No equipment requests found."
+							truncateCells
 						/>
 						<Pagination meta={data} onPageChange={setPage} />
 					</>
