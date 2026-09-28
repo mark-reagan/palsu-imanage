@@ -351,29 +351,49 @@ function ConcernReportTab() {
 		},
 		{ key: 'action', header: 'Record', render: (r) => titleCase(r.action) },
 		{ key: 'equipment_name', header: 'Equipment' },
-		{ key: 'asset_code', header: 'Asset Code', render: (r) => r.asset_code || '—' },
+		{
+			key: 'asset_code',
+			header: 'Asset Code',
+			render: (r) => r.asset_code || '—',
+		},
 		{ key: 'reporter_name', header: 'Reported by' },
-		{ key: 'severity', header: 'Severity', render: (r) => <Badge status={r.severity} /> },
-		{ key: 'status', header: 'Status', render: (r) => <Badge status={r.status} /> },
+		{
+			key: 'severity',
+			header: 'Severity',
+			render: (r) => <Badge status={r.severity} />,
+		},
+		{
+			key: 'status',
+			header: 'Status',
+			render: (r) => <Badge status={r.status} />,
+		},
 		{
 			key: 'admin_remarks',
 			header: 'Admin remarks',
-			render: (r) => r.admin_remarks ? (
-				<button
-					type="button"
-					className="max-w-56 text-left text-[var(--accent-strong)] underline decoration-dotted underline-offset-2 hover:text-[var(--accent)]"
-					onClick={() => setSelected(r)}
-					aria-label="View full admin remarks"
-				>
-					<span className="block truncate">{r.admin_remarks}</span>
-					<span className="text-xs">View remarks</span>
-				</button>
-			) : '—',
+			truncate: 'responsive',
+			render: (r) =>
+				r.admin_remarks ? (
+					<button
+						type="button"
+						className="block w-full min-w-0 text-left text-[var(--accent-strong)] underline decoration-dotted underline-offset-2 hover:text-[var(--accent)]"
+						onClick={() => setSelected(r)}
+						aria-label="View full admin remarks"
+					>
+						<span className="block truncate" title={r.admin_remarks}>
+							{r.admin_remarks}
+						</span>
+						<span className="block text-xs">View remarks</span>
+					</button>
+				) : (
+					'—'
+				),
 		},
 		{
 			key: 'actor',
 			header: 'Saved by',
-			render: (r) => <ActorAttribution actor={{ name: r.actor_name, role: r.actor_role }} />,
+			render: (r) => (
+				<ActorAttribution actor={{ name: r.actor_name, role: r.actor_role }} />
+			),
 		},
 	];
 
@@ -386,7 +406,12 @@ function ConcernReportTab() {
 				Each report and review save is retained as a separate history record.
 			</p>
 			<ReportTable>
-				<Table columns={columns} rows={data?.data} emptyMessage="No damage or concern history recorded." />
+				<Table
+					columns={columns}
+					rows={data?.data}
+					emptyMessage="No damage or concern history recorded."
+					truncateCells
+				/>
 			</ReportTable>
 			<Pagination meta={data} onPageChange={setPage} />
 			<Modal
@@ -397,7 +422,8 @@ function ConcernReportTab() {
 				{selected && (
 					<div className="space-y-3 text-sm">
 						<p className="text-[var(--text-soft)]">
-							{titleCase(selected.action)} · {formatDateTime(selected.created_at)} · {selected.actor_name}
+							{titleCase(selected.action)} ·{' '}
+							{formatDateTime(selected.created_at)} · {selected.actor_name}
 						</p>
 						<p className="whitespace-pre-wrap break-words rounded-lg border border-[var(--border)] bg-[var(--surface-muted)] p-3">
 							{selected.admin_remarks}
