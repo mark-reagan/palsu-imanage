@@ -8,6 +8,7 @@ import Button from '../../components/ui/Button';
 import Spinner from '../../components/ui/Spinner';
 import ErrorAlert from '../../components/ui/ErrorAlert';
 import Icon from '../../components/ui/Icon';
+import Modal from '../../components/ui/Modal';
 import { useApiRequest } from '../../hooks/useApiRequest';
 import { useAuth } from '../auth/useAuth';
 import { ROLES } from '../../lib/constants';
@@ -24,6 +25,7 @@ export default function ConcernsPage() {
 	const [status, setStatus] = useState('');
 	const [newOpen, setNewOpen] = useState(false);
 	const [reviewTarget, setReviewTarget] = useState(null);
+	const [selectedRemarks, setSelectedRemarks] = useState(null);
 
 	const { data, error, loading, refetch } = useApiRequest(
 		(signal) => concernsApi.list({ page, status }, signal),
@@ -61,11 +63,20 @@ export default function ConcernsPage() {
 		{
 			key: 'admin_remarks',
 			header: 'Admin remarks',
+			truncate: 'responsive',
 			render: (r) =>
 				r.admin_remarks ? (
-					<span className="line-clamp-2 max-w-xs" title={r.admin_remarks}>
-						{r.admin_remarks}
-					</span>
+					<button
+						type="button"
+						className="block w-full min-w-0 text-left text-[var(--accent-strong)] underline decoration-dotted underline-offset-2 hover:text-[var(--accent)]"
+						onClick={() => setSelectedRemarks(r)}
+						aria-label="View full admin remarks"
+					>
+						<span className="block truncate" title={r.admin_remarks}>
+							{r.admin_remarks}
+						</span>
+						<span className="block text-xs">View remarks</span>
+					</button>
 				) : (
 					'—'
 				),
@@ -142,6 +153,7 @@ export default function ConcernsPage() {
 							columns={columns}
 							rows={data?.data}
 							emptyMessage="No concerns reported."
+							truncateCells
 						/>
 						<Pagination meta={data} onPageChange={setPage} />
 					</>
@@ -164,6 +176,23 @@ export default function ConcernsPage() {
 				}}
 				disabled={isReadOnlyAdmin}
 			/>
+			<Modal
+				open={!!selectedRemarks}
+				onClose={() => setSelectedRemarks(null)}
+				title={`Admin remarks — ${selectedRemarks?.equipment?.name || 'Concern'}`}
+			>
+				{selectedRemarks && (
+					<div className="space-y-3 text-sm">
+						<p className="text-[var(--text-soft)]">
+							{selectedRemarks.reporter?.name || '—'} ·{' '}
+							{formatDateTime(selectedRemarks.created_at)}
+						</p>
+						<p className="whitespace-pre-wrap break-words rounded-lg border border-[var(--border)] bg-[var(--surface-muted)] p-3">
+							{selectedRemarks.admin_remarks}
+						</p>
+					</div>
+				)}
+			</Modal>
 		</div>
 	);
 }
