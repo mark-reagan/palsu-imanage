@@ -85,9 +85,8 @@ export default function ReleaseReturnPage() {
 		{
 			key: 'purpose',
 			header: 'Purpose',
-			render: (r) => (
-				<span className="line-clamp-1 max-w-xs">{r.purpose || '—'}</span>
-			),
+			truncate: 'responsive',
+			render: (r) => r.purpose || '—',
 		},
 		{
 			key: 'dates',
@@ -123,9 +122,8 @@ export default function ReleaseReturnPage() {
 		{
 			key: 'purpose',
 			header: 'Purpose',
-			render: (r) => (
-				<span className="line-clamp-1 max-w-xs">{r.purpose || '—'}</span>
-			),
+			truncate: 'responsive',
+			render: (r) => r.purpose || '—',
 		},
 		{ key: 'end_date', header: 'Due', render: (r) => formatDate(r.end_date) },
 		{
@@ -153,7 +151,8 @@ export default function ReleaseReturnPage() {
 		{
 			key: 'purpose',
 			header: 'Purpose',
-			render: (r) => <span className="line-clamp-1 max-w-xs">{r.purpose}</span>,
+			truncate: 'responsive',
+			render: (r) => r.purpose || '—',
 		},
 		{
 			key: 'actions',
@@ -216,6 +215,7 @@ export default function ReleaseReturnPage() {
 						<Table
 							columns={columns}
 							rows={activeRequest.data?.data}
+							truncateCells
 							emptyMessage={
 								tab === 'release-equipment'
 									? 'No approved equipment awaiting release.'
