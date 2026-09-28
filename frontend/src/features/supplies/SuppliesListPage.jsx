@@ -4,6 +4,7 @@ import Table from '../../components/ui/Table';
 import Pagination from '../../components/ui/Pagination';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
+import Select from '../../components/ui/Select';
 import Spinner from '../../components/ui/Spinner';
 import ConfirmActionModal from '../../components/ui/ConfirmActionModal';
 import Icon from '../../components/ui/Icon';
@@ -22,6 +23,7 @@ export default function SuppliesListPage() {
 	const { isReadOnlyAdmin } = useOfflineMode();
 	const [page, setPage] = useState(1);
 	const [search, setSearch] = useState('');
+	const [showDeactivated, setShowDeactivated] = useState(false);
 	const [formOpen, setFormOpen] = useState(false);
 	const [editing, setEditing] = useState(null);
 	const [requestTarget, setRequestTarget] = useState(null);
@@ -32,8 +34,12 @@ export default function SuppliesListPage() {
 	const [confirmTarget, setConfirmTarget] = useState(null);
 
 	const { data, error, loading, refetch } = useApiRequest(
-		(signal) => suppliesApi.list({ page, search }, signal),
-		[page, search],
+		(signal) =>
+			suppliesApi.list(
+				{ page, search, deactivated: showDeactivated ? 1 : undefined },
+				signal,
+			),
+		[page, search, showDeactivated],
 	);
 
 	const canManage = user.role === ROLES.ADMIN;
@@ -102,7 +108,7 @@ export default function SuppliesListPage() {
 			header: '',
 			render: (r) => (
 				<div className="flex justify-end gap-2">
-					{canRequest && r.stock_quantity > 0 && (
+					{canRequest && r.is_active && r.stock_quantity > 0 && (
 						<button
 							className={
 								requestItems.some((item) => item.id === r.id)
@@ -116,36 +122,56 @@ export default function SuppliesListPage() {
 								: 'Add to request'}
 						</button>
 					)}
-					{canManage && (
-						<>
-							<button
-								className="btn-secondary btn-sm"
-								disabled={isReadOnlyAdmin}
-								onClick={() => {
-									setEditing(r);
-									setFormOpen(true);
-								}}
-							>
-								Edit
-							</button>
-							<button
-								className="btn-danger btn-sm"
-								disabled={isReadOnlyAdmin}
-								onClick={() =>
-									setConfirmTarget({ type: 'deactivate-supply', item: r })
-								}
-							>
-								Deactivate
-							</button>
-							<button
-								className="btn-danger btn-sm"
-								disabled={isReadOnlyAdmin}
-								onClick={() => handleRemove(r)}
-							>
-								Delete
-							</button>
-						</>
-					)}
+					{canManage &&
+						(r.is_active ? (
+							<>
+								<button
+									className="btn-secondary btn-sm"
+									disabled={isReadOnlyAdmin}
+									onClick={() => {
+										setEditing(r);
+										setFormOpen(true);
+									}}
+								>
+									Edit
+								</button>
+								<button
+									className="btn-danger btn-sm"
+									disabled={isReadOnlyAdmin}
+									onClick={() =>
+										setConfirmTarget({ type: 'deactivate-supply', item: r })
+									}
+								>
+									Deactivate
+								</button>
+								<button
+									className="btn-danger btn-sm"
+									disabled={isReadOnlyAdmin}
+									onClick={() => handleRemove(r)}
+								>
+									Delete
+								</button>
+							</>
+						) : (
+							<>
+								<button
+									className="btn-primary btn-sm"
+									disabled={isReadOnlyAdmin}
+									onClick={() =>
+										setConfirmTarget({ type: 'activate-supply', item: r })
+									}
+								>
+									Activate
+								</button>
+								<button
+									className="btn-danger btn-sm"
+									disabled={isReadOnlyAdmin}
+									onClick={() => handleRemove(r)}
+								>
+									Delete
+								</button>
+							</>
+						))}
 				</div>
 			),
 		},
@@ -184,8 +210,9 @@ export default function SuppliesListPage() {
 			</div>
 
 			<Card>
-				<div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end">
+				<div className="mb-4 grid grid-cols-1 items-end gap-3 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)]">
 					<Input
+						className="h-9"
 						label="Search by name or supply code"
 						placeholder={searchPlaceholder}
 						value={search}
@@ -196,6 +223,7 @@ export default function SuppliesListPage() {
 					/>
 					{canScanBarcode && (
 						<Button
+							className="h-9 w-full"
 							variant="secondary"
 							type="button"
 							onClick={() => setScannerOpen(true)}
@@ -203,6 +231,20 @@ export default function SuppliesListPage() {
 						>
 							<Icon name="camera" className="h-4 w-4" /> Scan barcode
 						</Button>
+					)}
+					{canManage && (
+						<Select
+							className="h-9"
+							label="Filter by activation"
+							value={showDeactivated ? 'deactivated' : 'active'}
+							onChange={(event) => {
+								setPage(1);
+								setShowDeactivated(event.target.value === 'deactivated');
+							}}
+						>
+							<option value="active">Active</option>
+							<option value="deactivated">Deactivated</option>
+						</Select>
 					)}
 				</div>
 
@@ -233,23 +275,32 @@ export default function SuppliesListPage() {
 				title={
 					confirmTarget?.type === 'delete-supply'
 						? 'Delete Supply'
-						: 'Deactivate Supply'
+						: confirmTarget?.type === 'activate-supply'
+							? 'Activate Supply'
+							: 'Deactivate Supply'
 				}
 				message={
 					confirmTarget?.type === 'delete-supply'
 						? `Permanently delete ${confirmTarget?.item?.name}? This cannot be undone.`
-						: `Deactivate ${confirmTarget?.item?.name}?`
+						: `${confirmTarget?.type === 'activate-supply' ? 'Activate' : 'Deactivate'} ${confirmTarget?.item?.name}?`
 				}
 				confirmLabel={
 					confirmTarget?.type === 'delete-supply'
 						? 'Delete supply'
-						: 'Deactivate'
+						: confirmTarget?.type === 'activate-supply'
+							? 'Activate supply'
+							: 'Deactivate'
 				}
-				variant="danger"
+				variant={
+					confirmTarget?.type === 'activate-supply' ? 'primary' : 'danger'
+				}
 				onConfirm={async () => {
 					if (confirmTarget.type === 'delete-supply') {
 						await suppliesApi.remove(confirmTarget.item.id);
 						dispatchSuccess(`${confirmTarget.item.name} deleted.`);
+					} else if (confirmTarget.type === 'activate-supply') {
+						await suppliesApi.activate(confirmTarget.item.id);
+						dispatchSuccess(`${confirmTarget.item.name} activated.`);
 					} else {
 						await suppliesApi.deactivate(confirmTarget.item.id);
 						dispatchSuccess(`${confirmTarget.item.name} deactivated.`);

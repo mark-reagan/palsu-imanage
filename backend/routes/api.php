@@ -92,6 +92,7 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
 
         Route::apiResource('/supplies', SupplyController::class)->except(['index', 'show']);
         Route::post('/supplies/{supply}/deactivate', [SupplyController::class, 'deactivate']);
+        Route::post('/supplies/{supply}/activate', [SupplyController::class, 'activate']);
         Route::delete('/supplies/{supply}', [SupplyController::class, 'destroy']);
 
         // Request approval/decline

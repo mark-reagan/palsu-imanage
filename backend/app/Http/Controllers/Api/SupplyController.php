@@ -13,7 +13,9 @@ class SupplyController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Supply::query()->where('is_active', true);
+        $showDeactivated = $request->boolean('deactivated')
+            && $request->user()?->role === 'admin';
+        $query = Supply::query()->where('is_active', ! $showDeactivated);
 
         if ($request->filled('search')) {
             $search = $request->string('search');
@@ -74,6 +76,13 @@ class SupplyController extends Controller
         $supply->update(['is_active' => false]);
 
         return (new SupplyResource($supply))->additional(['message' => 'Supply deactivated.']);
+    }
+
+    public function activate(Supply $supply)
+    {
+        $supply->update(['is_active' => true]);
+
+        return (new SupplyResource($supply))->additional(['message' => 'Supply activated.']);
     }
 
     public function destroy(Supply $supply)

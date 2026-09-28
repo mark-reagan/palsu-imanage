@@ -12,5 +12,6 @@ export const suppliesApi = {
 	create: (payload) => api.post('/supplies', payload),
 	update: (id, payload) => api.put(`/supplies/${id}`, payload),
 	deactivate: (id) => api.post(`/supplies/${id}/deactivate`),
+	activate: (id) => api.post(`/supplies/${id}/activate`),
 	remove: (id) => api.del(`/supplies/${id}`),
 };

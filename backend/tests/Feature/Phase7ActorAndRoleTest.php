@@ -175,6 +175,7 @@ class Phase7ActorAndRoleTest extends TestCase
 
         $this->getJson("/api/v1/public/requests/{$request->tracking_token}")
             ->assertOk()
+            ->assertJsonPath('request.user.name', $faculty->name)
             ->assertJsonPath('request.approver.name', $admin->name)
             ->assertJsonPath('request.transaction.released_by.name', $staff->name);
     }

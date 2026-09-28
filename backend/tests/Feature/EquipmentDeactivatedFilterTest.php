@@ -74,4 +74,17 @@ class EquipmentDeactivatedFilterTest extends TestCase
             ->assertJsonFragment(['id' => $active->id])
             ->assertJsonMissing(['id' => $deactivated->id]);
     }
+
+    public function test_outsider_cannot_use_deactivated_filter_to_view_inactive_equipment(): void
+    {
+        $outsider = $this->user('outsider', 'equipment-filter-outsider@example.edu');
+        $active = $this->equipment('Outsider Active Equipment', true);
+        $deactivated = $this->equipment('Outsider Hidden Equipment', false);
+
+        $this->actingAs($outsider, 'sanctum')
+            ->getJson('/api/v1/equipment?deactivated=1')
+            ->assertOk()
+            ->assertJsonFragment(['id' => $active->id])
+            ->assertJsonMissing(['id' => $deactivated->id]);
+    }
 }

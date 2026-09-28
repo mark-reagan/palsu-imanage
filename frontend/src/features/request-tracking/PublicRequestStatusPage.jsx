@@ -66,6 +66,38 @@ export default function PublicRequestStatusPage() {
 	const itemType = isEquipment ? 'Equipment request' : 'Supply request';
 	const itemName =
 		request.equipment?.name || request.supply?.name || 'Inventory request';
+	const detailItems = [
+		{ label: 'Quantity', value: request.quantity },
+		request.start_date && {
+			label: 'Reservation period',
+			value: `${formatDate(request.start_date)} – ${formatDate(request.end_date)}`,
+		},
+		request.user?.name && { label: 'Requested by', value: request.user.name },
+		request.approver?.name && {
+			label: request.status === 'declined' ? 'Reviewed by' : 'Approved by',
+			value: request.approver.name,
+		},
+		request.approved_at && {
+			label: 'Reviewed at',
+			value: formatDate(request.approved_at),
+		},
+		request.transaction?.released_by?.name && {
+			label: 'Released by',
+			value: request.transaction.released_by.name,
+		},
+		request.transaction?.released_at && {
+			label: 'Released at',
+			value: formatDate(request.transaction.released_at),
+		},
+		request.transaction?.received_by?.name && {
+			label: 'Received by',
+			value: request.transaction.received_by.name,
+		},
+		request.transaction?.returned_at && {
+			label: 'Returned at',
+			value: formatDate(request.transaction.returned_at),
+		},
+	].filter(Boolean);
 
 	async function downloadQr() {
 		setDownloading(true);
@@ -99,8 +131,8 @@ export default function PublicRequestStatusPage() {
 	const transactionId = request.transaction?.id;
 
 	return (
-		<div className="mx-auto w-full max-w-5xl space-y-5 px-4 pb-8 pt-3 sm:pt-6">
-			<div className="flex items-center justify-between">
+		<div className="mx-auto w-full max-w-5xl space-y-4 px-4 pb-8 pt-3 sm:space-y-6 sm:pt-6">
+			<div className="flex items-center gap-3">
 				<Button
 					type="button"
 					variant="secondary"
@@ -109,101 +141,70 @@ export default function PublicRequestStatusPage() {
 				>
 					<span aria-hidden="true">←</span> Back
 				</Button>
-				<span className="hidden text-xs font-medium uppercase tracking-[0.18em] text-[var(--text-soft)] sm:block">
-					Request tracking
-				</span>
+				<div>
+					<p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]">
+						Request tracking
+					</p>
+					<p className="text-xs text-[var(--text-soft)]">
+						Status and request details
+					</p>
+				</div>
 			</div>
-			<div className="relative overflow-hidden rounded-3xl border border-[var(--border)] bg-[linear-gradient(135deg,var(--surface-strong),var(--surface-muted))] p-5 shadow-[0_18px_50px_var(--shadow)] sm:p-8">
-				<div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-[var(--accent-soft)] opacity-40 blur-3xl" />
-				<div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+			<div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm sm:p-6">
+				<div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
 					<div className="min-w-0">
-						<div className="mb-3 flex items-center gap-2">
-							<span
-								className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--accent-soft)] text-lg"
-								aria-hidden="true"
-							>
-								{isEquipment ? '▣' : '▤'}
-							</span>
-							<p className="text-sm font-semibold text-[var(--accent-strong)]">
-								{itemType}
-							</p>
-						</div>
-						<h1 className="break-words text-2xl font-bold tracking-tight text-[var(--text)] sm:text-3xl">
+						<p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--accent-strong)]">
+							{itemType}
+						</p>
+						<h1 className="mt-1 break-words text-2xl font-bold tracking-tight text-[var(--text)] sm:text-3xl">
 							{itemName}
 						</h1>
 						<p className="mt-2 text-sm text-[var(--text-soft)]">
+							Requested by{' '}
+							<span className="font-semibold text-[var(--text)]">
+								{request.user?.name || 'Unknown requester'}
+							</span>
+							<span className="mx-2" aria-hidden="true">
+								·
+							</span>
 							Submitted {formatDate(request.created_at)}
 						</p>
-						<div className="mt-4 inline-flex max-w-full flex-wrap items-center gap-x-2 gap-y-1 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm">
-							<span className="text-[var(--text-soft)]">Tracking code</span>
-							<span className="break-all font-mono font-semibold text-[var(--text)]">
-								{request.tracking_token}
-							</span>
-						</div>
 					</div>
-					<div className="flex shrink-0 items-center gap-3 self-start rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3 sm:self-center sm:px-4 sm:py-3">
-						<span
-							className="h-2.5 w-2.5 rounded-full bg-[var(--accent-strong)]"
-							aria-hidden="true"
-						/>
-						<div>
-							<p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]">
-								Current status
-							</p>
-							<div className="mt-1">
-								<Badge status={request.status} className="px-3 py-1 text-sm" />
-							</div>
-						</div>
+					<div className="flex items-center justify-between gap-3 rounded-xl bg-[var(--surface-muted)] px-3 py-2 sm:justify-start">
+						<span className="text-xs font-medium text-[var(--text-soft)]">
+							Status
+						</span>
+						<Badge status={request.status} className="px-3 py-1 text-sm" />
 					</div>
+				</div>
+				<div className="mt-4 border-t border-[var(--border)] pt-3">
+					<p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--text-soft)]">
+						Tracking code
+					</p>
+					<p className="mt-1 break-all font-mono text-sm font-semibold text-[var(--text)]">
+						{request.tracking_token}
+					</p>
 				</div>
 			</div>
 
-			<div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_280px]">
+			<div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_280px] lg:gap-6">
 				<Card title="Request details" className="h-full">
 					<dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-						<div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4">
-							<dt className="text-xs font-medium uppercase tracking-wide text-[var(--text-soft)]">
-								Quantity
-							</dt>
-							<dd className="mt-1 text-lg font-semibold text-[var(--text)]">
-								{request.quantity}
-							</dd>
-						</div>
-						{request.start_date && (
-							<div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4">
+						{detailItems.map((item) => (
+							<div
+								key={item.label}
+								className="rounded-xl bg-[var(--surface-muted)] p-3 sm:p-4"
+							>
 								<dt className="text-xs font-medium uppercase tracking-wide text-[var(--text-soft)]">
-									Reservation period
+									{item.label}
 								</dt>
-								<dd className="mt-1 font-semibold text-[var(--text)]">
-									{formatDate(request.start_date)} –{' '}
-									{formatDate(request.end_date)}
+								<dd className="mt-1 break-words text-sm font-semibold text-[var(--text)]">
+									{item.value}
 								</dd>
 							</div>
-						)}
-						{request.approver?.name && (
-							<div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4">
-								<dt className="text-xs font-medium uppercase tracking-wide text-[var(--text-soft)]">
-									{request.status === 'declined'
-										? 'Reviewed by'
-										: 'Approved by'}
-								</dt>
-								<dd className="mt-1 font-semibold text-[var(--text)]">
-									{request.approver.name}
-								</dd>
-							</div>
-						)}
-						{request.approved_at && (
-							<div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4">
-								<dt className="text-xs font-medium uppercase tracking-wide text-[var(--text-soft)]">
-									Reviewed at
-								</dt>
-								<dd className="mt-1 font-semibold text-[var(--text)]">
-									{formatDate(request.approved_at)}
-								</dd>
-							</div>
-						)}
+						))}
 						{request.purpose && (
-							<div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 sm:col-span-2">
+							<div className="rounded-xl bg-[var(--surface-muted)] p-3 sm:col-span-2 sm:p-4">
 								<dt className="text-xs font-medium uppercase tracking-wide text-[var(--text-soft)]">
 									Purpose
 								</dt>
@@ -212,52 +213,12 @@ export default function PublicRequestStatusPage() {
 								</dd>
 							</div>
 						)}
-						{request.transaction?.released_by?.name && (
-							<div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4">
-								<dt className="text-xs font-medium uppercase tracking-wide text-[var(--text-soft)]">
-									Released by
-								</dt>
-								<dd className="mt-1 font-semibold text-[var(--text)]">
-									{request.transaction.released_by.name}
-								</dd>
-							</div>
-						)}
-						{request.transaction?.released_at && (
-							<div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4">
-								<dt className="text-xs font-medium uppercase tracking-wide text-[var(--text-soft)]">
-									Released at
-								</dt>
-								<dd className="mt-1 font-semibold text-[var(--text)]">
-									{formatDate(request.transaction.released_at)}
-								</dd>
-							</div>
-						)}
-						{request.transaction?.received_by?.name && (
-							<div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4">
-								<dt className="text-xs font-medium uppercase tracking-wide text-[var(--text-soft)]">
-									Received by
-								</dt>
-								<dd className="mt-1 font-semibold text-[var(--text)]">
-									{request.transaction.received_by.name}
-								</dd>
-							</div>
-						)}
-						{request.transaction?.returned_at && (
-							<div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4">
-								<dt className="text-xs font-medium uppercase tracking-wide text-[var(--text-soft)]">
-									Returned at
-								</dt>
-								<dd className="mt-1 font-semibold text-[var(--text)]">
-									{formatDate(request.transaction.returned_at)}
-								</dd>
-							</div>
-						)}
 						{request.decline_reason && (
-							<div className="rounded-2xl border border-red-200 bg-red-50 p-4 sm:col-span-2">
+							<div className="rounded-xl border border-red-200 bg-red-50 p-3 sm:col-span-2 sm:p-4">
 								<dt className="text-xs font-medium uppercase tracking-wide text-red-700">
 									Reason for decline
 								</dt>
-								<dd className="mt-1 text-sm leading-6 text-red-900">
+								<dd className="mt-1 whitespace-pre-wrap text-sm leading-6 text-red-900">
 									{request.decline_reason}
 								</dd>
 							</div>
@@ -265,7 +226,7 @@ export default function PublicRequestStatusPage() {
 					</dl>
 				</Card>
 
-				<Card className="flex flex-col items-center justify-center text-center">
+				<Card className="flex flex-col items-center text-center">
 					<div className="mb-3 self-start text-left">
 						<h2 className="font-semibold text-[var(--text)]">
 							Keep this request handy
@@ -278,7 +239,7 @@ export default function PublicRequestStatusPage() {
 						<img
 							src={request.qr_url}
 							alt="QR code for request status"
-							className="h-40 w-40 max-w-full"
+							className="h-36 w-36 max-w-full sm:h-40 sm:w-40"
 						/>
 					</div>
 					<Button
