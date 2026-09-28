@@ -25,6 +25,7 @@ export default function EquipmentListPage() {
 	const [page, setPage] = useState(1);
 	const [search, setSearch] = useState('');
 	const [status, setStatus] = useState('');
+	const [showDeactivated, setShowDeactivated] = useState(false);
 	const [formOpen, setFormOpen] = useState(false);
 	const [editing, setEditing] = useState(null);
 	const [barcodeTarget, setBarcodeTarget] = useState(null);
@@ -35,8 +36,12 @@ export default function EquipmentListPage() {
 	const [confirmTarget, setConfirmTarget] = useState(null);
 
 	const { data, error, loading, refetch } = useApiRequest(
-		(signal) => equipmentApi.list({ page, search, status }, signal),
-		[page, search, status],
+		(signal) =>
+			equipmentApi.list(
+				{ page, search, status, deactivated: showDeactivated ? 1 : undefined },
+				signal,
+			),
+		[page, search, status, showDeactivated],
 	);
 
 	const canManage = user.role === ROLES.ADMIN;
@@ -97,7 +102,7 @@ export default function EquipmentListPage() {
 		{
 			key: 'status',
 			header: 'Status',
-			render: (r) => <Badge status={r.status} />,
+			render: (r) => <Badge status={r.is_active ? r.status : 'deactivated'} />,
 		},
 		{
 			key: 'actions',
@@ -118,36 +123,56 @@ export default function EquipmentListPage() {
 								: 'Add to request'}
 						</button>
 					)}
-					{canManage && (
-						<>
-							<button
-								className="btn-secondary btn-sm"
-								disabled={isReadOnlyAdmin}
-								onClick={() => {
-									setEditing(r);
-									setFormOpen(true);
-								}}
-							>
-								Edit
-							</button>
-							<button
-								className="btn-danger btn-sm"
-								disabled={isReadOnlyAdmin}
-								onClick={() =>
-									setConfirmTarget({ type: 'deactivate-equipment', item: r })
-								}
-							>
-								Deactivate
-							</button>
-							<button
-								className="btn-danger btn-sm"
-								disabled={isReadOnlyAdmin}
-								onClick={() => handleRemove(r)}
-							>
-								Delete
-							</button>
-						</>
-					)}
+					{canManage &&
+						(r.is_active ? (
+							<>
+								<button
+									className="btn-secondary btn-sm"
+									disabled={isReadOnlyAdmin}
+									onClick={() => {
+										setEditing(r);
+										setFormOpen(true);
+									}}
+								>
+									Edit
+								</button>
+								<button
+									className="btn-danger btn-sm"
+									disabled={isReadOnlyAdmin}
+									onClick={() =>
+										setConfirmTarget({ type: 'deactivate-equipment', item: r })
+									}
+								>
+									Deactivate
+								</button>
+								<button
+									className="btn-danger btn-sm"
+									disabled={isReadOnlyAdmin}
+									onClick={() => handleRemove(r)}
+								>
+									Delete
+								</button>
+							</>
+						) : (
+							<>
+								<button
+									className="btn-primary btn-sm"
+									disabled={isReadOnlyAdmin}
+									onClick={() =>
+										setConfirmTarget({ type: 'activate-equipment', item: r })
+									}
+								>
+									Activate
+								</button>
+								<button
+									className="btn-danger btn-sm"
+									disabled={isReadOnlyAdmin}
+									onClick={() => handleRemove(r)}
+								>
+									Delete
+								</button>
+							</>
+						))}
 				</div>
 			),
 		},
@@ -224,6 +249,20 @@ export default function EquipmentListPage() {
 						<option value="partially_available">Partially available</option>
 						<option value="unavailable">Unavailable</option>
 					</Select>
+					{canManage && (
+						<Select
+							className="h-9"
+							label="Filter by activation"
+							value={showDeactivated ? 'deactivated' : 'active'}
+							onChange={(event) => {
+								setPage(1);
+								setShowDeactivated(event.target.value === 'deactivated');
+							}}
+						>
+							<option value="active">Active</option>
+							<option value="deactivated">Deactivated</option>
+						</Select>
+					)}
 				</div>
 
 				{loading && <Spinner />}
@@ -253,24 +292,33 @@ export default function EquipmentListPage() {
 				title={
 					confirmTarget?.type === 'delete-equipment'
 						? 'Delete Equipment'
-						: 'Deactivate Equipment'
+						: confirmTarget?.type === 'activate-equipment'
+							? 'Activate Equipment'
+							: 'Deactivate Equipment'
 				}
 				message={
 					confirmTarget?.type === 'delete-equipment'
 						? `Permanently delete ${confirmTarget?.item?.name}? This cannot be undone.`
-						: `Deactivate ${confirmTarget?.item?.name}?`
+						: `${confirmTarget?.type === 'activate-equipment' ? 'Activate' : 'Deactivate'} ${confirmTarget?.item?.name}?`
 				}
 				confirmLabel={
 					confirmTarget?.type === 'delete-equipment'
 						? 'Delete equipment'
-						: 'Deactivate'
+						: confirmTarget?.type === 'activate-equipment'
+							? 'Activate equipment'
+							: 'Deactivate'
 				}
-				variant="danger"
+				variant={
+					confirmTarget?.type === 'activate-equipment' ? 'primary' : 'danger'
+				}
 				onConfirm={async () => {
 					let message;
 					if (confirmTarget.type === 'delete-equipment') {
 						await equipmentApi.remove(confirmTarget.item.id);
 						message = `${confirmTarget.item.name} deleted.`;
+					} else if (confirmTarget.type === 'activate-equipment') {
+						await equipmentApi.activate(confirmTarget.item.id);
+						message = `${confirmTarget.item.name} activated.`;
 					} else {
 						await equipmentApi.deactivate(confirmTarget.item.id);
 						message = `${confirmTarget.item.name} deactivated.`;

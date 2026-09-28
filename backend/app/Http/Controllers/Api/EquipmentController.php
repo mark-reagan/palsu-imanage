@@ -14,7 +14,9 @@ class EquipmentController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Equipment::query()->where('is_active', true);
+        $showDeactivated = $request->boolean('deactivated')
+            && $request->user()?->role === 'admin';
+        $query = Equipment::query()->where('is_active', ! $showDeactivated);
 
         if ($request->filled('search')) {
             $s = $request->string('search');
@@ -83,6 +85,13 @@ class EquipmentController extends Controller
         $equipment->update(['is_active' => false]);
 
         return (new EquipmentResource($equipment))->additional(['message' => 'Equipment deactivated.']);
+    }
+
+    public function activate(Equipment $equipment)
+    {
+        $equipment->update(['is_active' => true]);
+
+        return (new EquipmentResource($equipment))->additional(['message' => 'Equipment activated.']);
     }
 
     public function destroy(Equipment $equipment)

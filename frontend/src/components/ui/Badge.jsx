@@ -11,6 +11,7 @@ const STATUS_STYLES = {
 	damaged: 'bg-red-100 text-red-800',
 	under_repair: 'bg-orange-100 text-orange-800',
 	lost: 'bg-slate-300 text-slate-700',
+	deactivated: 'bg-slate-200 text-slate-700',
 	available: 'bg-green-100 text-green-800',
 	partially_available: 'bg-amber-100 text-amber-800',
 	unavailable: 'bg-red-100 text-red-800',

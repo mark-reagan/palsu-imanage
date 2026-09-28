@@ -6,6 +6,7 @@ export const equipmentApi = {
 	create: (payload) => api.post('/equipment', payload),
 	update: (id, payload) => api.put(`/equipment/${id}`, payload),
 	deactivate: (id) => api.post(`/equipment/${id}/deactivate`),
+	activate: (id) => api.post(`/equipment/${id}/activate`),
 	remove: (id) => api.del(`/equipment/${id}`),
 	statusByBarcode: (barcode, signal) =>
 		api.get(

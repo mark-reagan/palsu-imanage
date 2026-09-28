@@ -87,6 +87,7 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
         // Inventory management (create/edit/deactivate)
         Route::apiResource('/equipment', EquipmentController::class)->except(['index', 'show']);
         Route::post('/equipment/{equipment}/deactivate', [EquipmentController::class, 'deactivate']);
+        Route::post('/equipment/{equipment}/activate', [EquipmentController::class, 'activate']);
         Route::delete('/equipment/{equipment}', [EquipmentController::class, 'destroy']);
 
         Route::apiResource('/supplies', SupplyController::class)->except(['index', 'show']);
