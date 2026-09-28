@@ -106,10 +106,10 @@ export default function SupplyRequestsPage() {
 		{
 			key: 'actions',
 			header: 'Actions',
-			headerAlign: 'center',
+			headerAlign: 'left',
 			minWidth: true,
 			render: (r) => (
-				<div className="flex w-max justify-end gap-2">
+				<div className="flex w-max justify-start gap-2">
 					{isAdmin && r.status === 'pending' && (
 						<>
 							<button
