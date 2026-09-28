@@ -8,6 +8,7 @@ import Badge from '../../components/ui/Badge';
 import ErrorAlert from '../../components/ui/ErrorAlert';
 import Spinner from '../../components/ui/Spinner';
 import BarcodeImage from './BarcodeImage';
+import { dispatchError } from '../../lib/toast';
 import { suppliesApi } from './api';
 
 export default function SupplyBarcodeModal({
@@ -19,7 +20,7 @@ export default function SupplyBarcodeModal({
 }) {
 	const videoRef = useRef(null);
 	const controlsRef = useRef(null);
-	const lookupRef = useRef(null);
+	const submitBarcodeRef = useRef(null);
 	const onScannedRef = useRef(null);
 	const barcodeRef = useRef(null);
 	const [code, setCode] = useState(supply?.barcode || '');
@@ -29,7 +30,7 @@ export default function SupplyBarcodeModal({
 	const [cameraError, setCameraError] = useState(null);
 
 	useEffect(() => {
-		lookupRef.current = lookup;
+		submitBarcodeRef.current = submitBarcode;
 		onScannedRef.current = onScanned;
 	});
 
@@ -42,11 +43,7 @@ export default function SupplyBarcodeModal({
 				if (scanResult) {
 					const scannedCode = scanResult.getText().trim();
 					setCode(scannedCode);
-					if (onScannedRef.current) {
-						onScannedRef.current(scannedCode);
-						return;
-					}
-					lookupRef.current?.(scannedCode);
+					submitBarcodeRef.current?.(scannedCode);
 					controlsRef.current?.stop();
 				}
 			})
@@ -66,7 +63,7 @@ export default function SupplyBarcodeModal({
 	}, [open, scanEnabled]);
 
 	async function lookup(value = code) {
-		const barcode = value.trim();
+		const barcode = value.trim().toUpperCase();
 		if (!barcode) return;
 		setLoading(true);
 		setError(null);
@@ -78,6 +75,24 @@ export default function SupplyBarcodeModal({
 		} finally {
 			setLoading(false);
 		}
+	}
+
+	function submitBarcode(value = code) {
+		const barcode = value.trim().toUpperCase();
+		if (!/^SUP-(?:[A-Z0-9]{10}|[0-9]{8})$/.test(barcode)) {
+			setResult(null);
+			setError(null);
+			dispatchError('Enter a valid supply barcode.');
+			return;
+		}
+
+		setError(null);
+		if (onScannedRef.current) {
+			onScannedRef.current(barcode);
+			controlsRef.current?.stop();
+			return;
+		}
+		lookup(barcode);
 	}
 
 	function downloadBarcode() {
@@ -116,19 +131,22 @@ export default function SupplyBarcodeModal({
 							below.
 						</p>
 						<form
-							className="flex items-end gap-2"
+							className="flex w-full items-end gap-2"
 							onSubmit={(event) => {
 								event.preventDefault();
-								lookup();
+								submitBarcode();
 							}}
 						>
-							<Input
-								label="Barcode code"
-								value={code}
-								onChange={(event) => setCode(event.target.value)}
-								placeholder="SUP-00000001"
-							/>
-							<Button type="submit" loading={loading}>
+							<div className="min-w-0 flex-1">
+								<Input
+									className="w-full"
+									label="Barcode code"
+									value={code}
+									onChange={(event) => setCode(event.target.value)}
+									placeholder="SUP-00000001"
+								/>
+							</div>
+							<Button type="submit" loading={loading} className="shrink-0">
 								Check
 							</Button>
 						</form>
