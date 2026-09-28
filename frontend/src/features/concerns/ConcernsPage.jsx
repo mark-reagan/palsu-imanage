@@ -59,6 +59,18 @@ export default function ConcernsPage() {
 			),
 		},
 		{
+			key: 'admin_remarks',
+			header: 'Admin remarks',
+			render: (r) =>
+				r.admin_remarks ? (
+					<span className="line-clamp-2 max-w-xs" title={r.admin_remarks}>
+						{r.admin_remarks}
+					</span>
+				) : (
+					'—'
+				),
+		},
+		{
 			key: 'status',
 			header: 'Status',
 			render: (r) => <Badge status={r.status} />,
