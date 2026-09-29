@@ -7,7 +7,7 @@ import Spinner from '../../components/ui/Spinner';
 import ErrorAlert from '../../components/ui/ErrorAlert';
 import Modal from '../../components/ui/Modal';
 import { useApiRequest } from '../../hooks/useApiRequest';
-import { formatDateTime, titleCase } from '../../lib/format';
+import { formatDate, formatDateTime, titleCase } from '../../lib/format';
 import { reportsApi } from './api';
 
 const TABS = [
@@ -199,6 +199,9 @@ function SupplyUsageTab() {
 }
 
 function TransactionsTab() {
+	const [selectedEquipmentTransaction, setSelectedEquipmentTransaction] =
+		useState(null);
+	const [transactionViewedAt, setTransactionViewedAt] = useState(null);
 	const { data, error, loading } = useApiRequest(
 		(signal) => reportsApi.transactions(signal),
 		[],
@@ -233,16 +236,16 @@ function TransactionsTab() {
 			),
 		},
 		{
+			key: 'status',
+			header: 'Status',
+			render: (r) => <Badge status={r.status} />,
+		},
+		{
 			key: 'received_by',
 			header: 'Received By',
 			render: (r) => (
 				<ActorAttribution actor={r.received_by} actionAt={r.returned_at} />
 			),
-		},
-		{
-			key: 'status',
-			header: 'Status',
-			render: (r) => <Badge status={r.status} />,
 		},
 	];
 
@@ -304,10 +307,122 @@ function TransactionsTab() {
 						rows={
 							data.equipment_transactions?.data ?? data.equipment_transactions
 						}
+						onRowClick={(transaction) => {
+							setTransactionViewedAt(Date.now());
+							setSelectedEquipmentTransaction(transaction);
+						}}
 						emptyMessage="No equipment transactions yet."
 					/>
 				</ReportTable>
 			</section>
+			<Modal
+				open={!!selectedEquipmentTransaction}
+				onClose={() => setSelectedEquipmentTransaction(null)}
+				title={`${selectedEquipmentTransaction?.equipment_request?.equipment?.name || 'Equipment'} transaction details`}
+				size="lg"
+			>
+				{selectedEquipmentTransaction &&
+					(() => {
+						const transaction = selectedEquipmentTransaction;
+						const request = transaction.equipment_request;
+						const dueDate = request?.end_date;
+						const hasReturned =
+							transaction.status === 'returned' ||
+							Boolean(transaction.returned_at);
+						const isOverdue =
+							!hasReturned &&
+							dueDate &&
+							transactionViewedAt !== null &&
+							new Date(dueDate).getTime() < transactionViewedAt;
+
+						let returnMessage;
+						if (hasReturned) {
+							returnMessage = `This equipment was already returned${transaction.returned_at ? ` on ${formatDateTime(transaction.returned_at)}` : ''}.`;
+						} else if (isOverdue) {
+							returnMessage = `The return due date passed on ${formatDate(dueDate)}, but this transaction is still marked as not returned.`;
+						} else if (dueDate) {
+							returnMessage = `This equipment has not been returned yet. It is due to be returned on ${formatDate(dueDate)}.`;
+						} else if (transaction.status === 'released') {
+							returnMessage =
+								'This equipment has not been returned yet. No return due date was recorded.';
+						} else {
+							returnMessage = `Return status: ${titleCase(transaction.status) || 'not recorded'}.`;
+						}
+
+						return (
+							<div className="space-y-4 text-sm">
+								<div className="rounded-lg border border-[var(--border)] bg-[var(--surface-muted)] p-3">
+									<p className="font-semibold text-[var(--text)]">
+										Return status
+									</p>
+									<p className="mt-1 text-[var(--text-soft)]">
+										{returnMessage}
+									</p>
+								</div>
+								<dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+									<div>
+										<dt className="text-xs font-semibold uppercase text-[var(--text-soft)]">
+											Borrower
+										</dt>
+										<dd className="mt-1">{request?.user?.name || '—'}</dd>
+									</div>
+									<div>
+										<dt className="text-xs font-semibold uppercase text-[var(--text-soft)]">
+											Received by
+										</dt>
+										<dd className="mt-1">
+											{transaction.received_by?.name || '—'}
+										</dd>
+									</div>
+									<div>
+										<dt className="text-xs font-semibold uppercase text-[var(--text-soft)]">
+											Released
+										</dt>
+										<dd className="mt-1">
+											{transaction.released_at
+												? formatDateTime(transaction.released_at)
+												: '—'}
+										</dd>
+									</div>
+									<div>
+										<dt className="text-xs font-semibold uppercase text-[var(--text-soft)]">
+											Returned
+										</dt>
+										<dd className="mt-1">
+											{transaction.returned_at
+												? formatDateTime(transaction.returned_at)
+												: 'Not returned'}
+										</dd>
+									</div>
+									<div>
+										<dt className="text-xs font-semibold uppercase text-[var(--text-soft)]">
+											Condition on release
+										</dt>
+										<dd className="mt-1">
+											{titleCase(transaction.condition_on_release) || '—'}
+										</dd>
+									</div>
+									<div>
+										<dt className="text-xs font-semibold uppercase text-[var(--text-soft)]">
+											Condition on return
+										</dt>
+										<dd className="mt-1">
+											{titleCase(transaction.condition_on_return) || '—'}
+										</dd>
+									</div>
+									<div className="sm:col-span-2">
+										<dt className="text-xs font-semibold uppercase text-[var(--text-soft)]">
+											Return remarks
+										</dt>
+										<dd className="mt-1 whitespace-pre-wrap break-words">
+											{transaction.remarks || 'No return remarks provided.'}
+										</dd>
+									</div>
+								</dl>
+							</div>
+						);
+					})()}
+			</Modal>
 			<section
 				aria-labelledby="supply-transactions-heading"
 				className="space-y-2"

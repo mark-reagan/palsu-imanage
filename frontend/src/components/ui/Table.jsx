@@ -4,6 +4,7 @@ export default function Table({
 	rowKey = 'id',
 	emptyMessage = 'No records found.',
 	truncateCells = false,
+	onRowClick,
 }) {
 	if (!rows || rows.length === 0) {
 		return (
@@ -40,7 +41,20 @@ export default function Table({
 					{rows.map((row) => (
 						<tr
 							key={row[rowKey]}
-							className="hover:bg-[var(--surface-muted)] focus-within:bg-[var(--surface-muted)]"
+							className={`hover:bg-[var(--surface-muted)] focus-within:bg-[var(--surface-muted)]${onRowClick ? ' cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--accent)]' : ''}`}
+							tabIndex={onRowClick ? 0 : undefined}
+							aria-label={onRowClick ? 'View row details' : undefined}
+							onClick={onRowClick ? () => onRowClick(row) : undefined}
+							onKeyDown={
+								onRowClick
+									? (event) => {
+											if (event.key === 'Enter' || event.key === ' ') {
+												event.preventDefault();
+												onRowClick(row);
+											}
+										}
+									: undefined
+							}
 						>
 							{columns.map((col) => (
 								<td
