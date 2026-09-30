@@ -169,7 +169,7 @@ export default function UsersPage() {
 							rows={data?.data}
 							emptyMessage="No users found."
 						/>
-						<Pagination meta={data} onPageChange={setPage} />
+						<Pagination meta={data?.meta} onPageChange={setPage} />
 					</>
 				)}
 			</Card>

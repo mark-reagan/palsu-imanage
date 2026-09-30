@@ -262,7 +262,7 @@ export default function SuppliesListPage() {
 							rows={data?.data}
 							emptyMessage="No supplies found."
 						/>
-						<Pagination meta={data} onPageChange={setPage} />
+						<Pagination meta={data?.meta} onPageChange={setPage} />
 					</>
 				)}
 			</Card>

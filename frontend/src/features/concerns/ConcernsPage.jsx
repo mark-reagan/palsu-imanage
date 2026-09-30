@@ -155,7 +155,7 @@ export default function ConcernsPage() {
 							emptyMessage="No concerns reported."
 							truncateCells
 						/>
-						<Pagination meta={data} onPageChange={setPage} />
+						<Pagination meta={data?.meta} onPageChange={setPage} />
 					</>
 				)}
 			</Card>

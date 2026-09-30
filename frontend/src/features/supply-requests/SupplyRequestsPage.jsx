@@ -225,7 +225,7 @@ export default function SupplyRequestsPage() {
 							emptyMessage="No supply requests found."
 							truncateCells
 						/>
-						<Pagination meta={data} onPageChange={setPage} />
+						<Pagination meta={data?.meta} onPageChange={setPage} />
 					</>
 				)}
 			</Card>

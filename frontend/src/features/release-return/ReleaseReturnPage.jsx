@@ -224,7 +224,10 @@ export default function ReleaseReturnPage() {
 										: 'No approved supply requests awaiting release.'
 							}
 						/>
-						<Pagination meta={activeRequest.data} onPageChange={setPage} />
+						<Pagination
+							meta={activeRequest.data?.meta}
+							onPageChange={setPage}
+						/>
 					</>
 				)}
 			</Card>

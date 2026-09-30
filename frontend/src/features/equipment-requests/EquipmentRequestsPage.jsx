@@ -233,7 +233,7 @@ export default function EquipmentRequestsPage() {
 							emptyMessage="No equipment requests found."
 							truncateCells
 						/>
-						<Pagination meta={data} onPageChange={setPage} />
+						<Pagination meta={data?.meta} onPageChange={setPage} />
 					</>
 				)}
 			</Card>

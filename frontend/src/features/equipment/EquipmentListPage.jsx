@@ -277,7 +277,7 @@ export default function EquipmentListPage() {
 							rows={data?.data}
 							emptyMessage="No equipment found."
 						/>
-						<Pagination meta={data} onPageChange={setPage} />
+						<Pagination meta={data?.meta} onPageChange={setPage} />
 					</>
 				)}
 			</Card>

@@ -193,7 +193,7 @@ function SupplyUsageTab() {
 					emptyMessage="No supply usage recorded yet."
 				/>
 			</ReportTable>
-			<Pagination meta={data} onPageChange={setPage} />
+			<Pagination meta={data?.meta} onPageChange={setPage} />
 		</>
 	);
 }

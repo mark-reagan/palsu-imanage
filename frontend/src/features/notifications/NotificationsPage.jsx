@@ -184,7 +184,7 @@ export default function NotificationsPage() {
 								</p>
 							)}
 						</div>
-						<Pagination meta={data} onPageChange={setPage} />
+						<Pagination meta={data?.meta} onPageChange={setPage} />
 					</>
 				)}
 			</Card>
